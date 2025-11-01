@@ -20,7 +20,7 @@ import {
 // IMPORTAÇÕES DO FIREBASE
 import { auth, db } from '../Firebase/Firebase.js';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
-import { doc, getDoc, updateDoc } from 'Firebase/firestore'; 
+import { doc, getDoc, updateDoc } from 'firebase/firestore'; 
 
 // DADOS DE EXEMPLO ATUALIZADOS
 const processes = [
