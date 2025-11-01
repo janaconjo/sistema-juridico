@@ -1,39 +1,30 @@
 /*
  * --------------------------------------------------------------------------
  * Home.css - Estilos Completos e Responsivos
- * Versão: Menu Lateral Mobile (Verde Transparente, Centralizado)
+ * Versão: FINAL (Com Carrossel de Galeria Curvado e Serviços Padronizados)
  * --------------------------------------------------------------------------
  */
 
-/* Variáveis de Cor */
+/* Variáveis de Color */
 :root {
     --primary: #008080;
     --secondary: #3cb371;
     --tertiary: #e0f7f4;
-    /* MUDANÇA: Fundo do cartão/menu (verde suave semi-transparente) */
-    --cardBackground: rgba(224, 247, 244, 0.9); /* Usando a cor tertiary com 90% de opacidade */
+    --cardBackground: rgba(224, 247, 244, 0.9);
     --text: #2d3748;
-    --menuWidth: 300px; 
+    --menuWidth: 300px;
+    --carousel-item-width: 80%;
+    --carousel-height: 450px;
 }
 
 /* -------------------------------------------------------------------------- */
-/* Estilos de Interação (Hover) */
+/* ESTILOS DE INTERAÇÃO E ANIMAÇÕES GERAIS */
 /* -------------------------------------------------------------------------- */
 
+/* Hover do Link no Desktop */
 .nav a:hover {
-    color: var(--tertiary); 
+    color: var(--tertiary);
     transition: color 0.3s ease;
-}
-
-.pinterestImage:hover {
-    transform: scale(1.05);
-    transition: transform 0.3s ease;
-}
-
-.card:hover {
-    transform: translateY(-10px);
-    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 /* Animação do Botão Chatbot */
@@ -49,49 +40,168 @@
 
 /* Hover do Botão Padrão */
 button:hover {
-    background-color: #006666 !important; 
+    /* Mantém a cor primária ou secundária ligeiramente mais escura no hover */
+    background-color: #006666 !important;
     transition: background-color 0.3s ease;
 }
 
-/* -------------------------------------------------------------------------- */
 /* Animações de Entrada (Hero Section) */
-/* -------------------------------------------------------------------------- */
-
 .animated-hero {
-    transition: background-image 1s ease-in-out; 
-    display: flex; 
+    transition: background-image 1s ease-in-out;
+    display: flex;
 }
 
 .animated-item {
     opacity: 0;
-    transform: translateY(20px); 
+    transform: translateY(20px);
     animation: fade-down 0.8s forwards;
 }
 
 @keyframes fade-down {
     to {
         opacity: 1;
-        transform: translateY(0); 
+        transform: translateY(0);
     }
 }
 
-.animated-item.delay-1 {
-    animation-delay: 0.3s; 
+.animated-item.delay-1 { animation-delay: 0.3s; }
+.animated-item.delay-2 { animation-delay: 0.6s; }
+.animated-item.delay-3 { animation-delay: 0.9s; }
+
+/* Animação de Card de Serviço (Padronizada) */
+.service-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    /* Garante que o fundo não mude */
+    background-color: white !important; 
+    color: var(--text) !important;
+}
+.service-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
 }
 
-.animated-item.delay-2 {
-    animation-delay: 0.6s; 
-}
+/* REMOVIDO: Regra de destaque .highlight-card:hover para padronizar os cartões */
 
-.animated-item.delay-3 {
-    animation-delay: 0.9s; 
-}
 
 /* -------------------------------------------------------------------------- */
-/* Estilos de Navegação (Desktop-First) */
+/* ESTILOS DA GALERIA CARROSSEL COM CURVATURA */
 /* -------------------------------------------------------------------------- */
 
-/* Oculta o botão de alternância do menu por padrão (em desktop) */
+.carousel-container {
+    position: relative;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    overflow: hidden;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    height: var(--carousel-height);
+}
+
+.carousel-wrapper {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.carousel-item {
+    flex: 0 0 100%;
+    width: 100%;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /* Efeito de curvatura sutil */
+    transform: perspective(1000px) rotateY(0deg);
+    transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.carousel-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: brightness(0.8);
+    transition: filter 0.3s ease;
+}
+
+.carousel-item:hover .carousel-image {
+    filter: brightness(1);
+}
+
+.carousel-caption {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 1.5rem 2rem;
+    background: linear-gradient(to top, rgba(0,0,0,0.7), rgba(0,0,0,0));
+    color: white;
+    text-align: center;
+    opacity: 1;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    transform: translateY(0);
+}
+
+.carousel-item:hover .carousel-caption {
+    opacity: 1;
+    transform: translateY(-10px);
+}
+
+.carousel-caption h4 {
+    font-size: 1.8rem;
+    margin: 0 0 0.5rem 0;
+    font-weight: 700;
+}
+
+.carousel-caption p {
+    font-size: 1rem;
+    line-height: 1.5;
+    margin: 0;
+    max-width: 80%;
+    margin: 0 auto;
+}
+
+.carousel-nav-button {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: rgba(0, 0, 0, 0.5);
+    color: white;
+    border: none;
+    padding: 1rem 0.8rem;
+    cursor: pointer;
+    font-size: 2rem;
+    z-index: 50;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 50px;
+    height: 50px;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.carousel-nav-button:hover {
+    background-color: rgba(0, 0, 0, 0.7);
+    transform: translateY(-50%) scale(1.1);
+}
+
+.carousel-nav-button.prev {
+    left: 1rem;
+}
+
+.carousel-nav-button.next {
+    right: 1rem;
+}
+
+
+/* -------------------------------------------------------------------------- */
+/* ESTILOS DE NAVEGAÇÃO (Desktop-First) - MANTIDOS */
+/* -------------------------------------------------------------------------- */
+
 .menu-toggle {
     display: none;
     background: none;
@@ -103,7 +213,6 @@ button:hover {
     padding: 0;
 }
 
-/* Configuração da NAV no Desktop (usa a classe .nav) */
 .nav {
     display: flex;
     gap: 2rem;
@@ -115,106 +224,74 @@ button:hover {
 /* MEDIA QUERY: RESPONSIVIDADE (Telas menores que 900px) */
 /* -------------------------------------------------------------------------- */
 @media (max-width: 900px) {
-    
-    /* HEADER: Ajuste para mobile */
+
     header {
-        padding: 1rem 1rem !important; 
-        min-height: 60px; 
-        position: relative; 
-        z-index: 1000; 
+        padding: 1rem 1rem !important;
+        min-height: 60px;
+        position: relative;
+        z-index: 1000;
     }
 
-    /* Exibe e alinha o Botão Hambúrguer */
     .menu-toggle {
-        display: flex; 
+        display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 1.5rem; 
-        height: 40px; 
+        font-size: 1.5rem;
+        height: 40px;
         width: 40px;
         color: #fff;
         z-index: 1002;
     }
-    
-    /* -------------------------------------------------- */
-    /* MENU LATERAL (.nav): Estilo App - MUDANÇAS APLICADAS */
-    /* -------------------------------------------------- */
 
+    /* MENU LATERAL (.nav) */
     .nav {
-        display: flex; 
         flex-direction: column;
-        /* MUDANÇA: Centraliza o conteúdo verticalmente */
-        justify-content: center; 
-        
-        position: fixed; 
-        top: 0; 
-        right: 0; 
-        
-        width: 80%; 
-        max-width: var(--menuWidth); 
-        
-        height: 100vh; /* Mantido 100vh para permitir o justify-content: center */
-        
-        background-color: var(--cardBackground); /* VERDE TRANSPARENTE */
-        
-        border-radius: 20px 0 0 20px; 
+        justify-content: center;
+        position: fixed;
+        top: 0;
+        right: 0;
+        width: 80%;
+        max-width: var(--menuWidth);
+        height: 100vh;
+        background-color: var(--cardBackground);
+        border-radius: 20px 0 0 20px;
         box-shadow: -4px 0 20px rgba(0, 0, 0, 0.2);
-        
-        transform: translateX(100%); 
-        transition: transform 0.4s ease-in-out; 
-        
+        transform: translateX(100%);
+        transition: transform 0.4s ease-in-out;
         z-index: 1001;
-        overflow-y: auto; 
-        
-        padding: 0; 
+        overflow-y: auto;
+        padding: 0;
     }
-    
-    /* Efeito de abertura do menu */
+
     .nav.open {
-        transform: translateX(0); 
+        transform: translateX(0);
     }
-    
-    /* -------------------------------------------------- */
-    /* REMOÇÃO DO 'X' - Remove o pseudo-elemento */
-    /* -------------------------------------------------- */
-    .nav::before {
-        content: none; /* Remove o 'X' */
-    }
-    
-    /* -------------------------------------------------- */
-    /* ESTILOS DOS LINKS DENTRO DO NOVO MENU MOBILE */
-    /* -------------------------------------------------- */
 
     .nav a {
         display: flex;
-        /* MUDANÇA: Centraliza o texto horizontalmente */
-        justify-content: center; 
-        padding: 0.75rem 1.5rem; 
+        justify-content: center;
+        padding: 0.75rem 1.5rem;
         width: 100%;
         box-sizing: border-box;
-        text-align: center; /* Garante que o texto fique centrado */
-        color: var(--text) !important; 
+        text-align: center;
+        color: var(--text) !important;
         font-weight: 500;
         text-decoration: none;
-        
-        margin: 0.25rem 0; 
-        border-radius: 0 10px 10px 0; 
-        
+        margin: 0.25rem 0;
+        border-radius: 0 10px 10px 0;
         transition: background-color 0.2s ease, color 0.2s ease;
     }
 
     .nav a:hover {
-        background-color: var(--tertiary); 
-        color: var(--primary) !important; 
+        background-color: var(--tertiary);
+        color: var(--primary) !important;
     }
 
-    /* Estilo para o Botão "Cadastre-se" no menu mobile */
     .register-button-nav {
-        /* MUDANÇA: Centraliza o botão dentro da nav */
-        margin: 2rem auto 1rem auto; /* 'auto' centraliza horizontalmente */
+        margin: 2rem auto 1rem auto;
         padding: 0.75rem 1rem;
-        width: calc(100% - 3rem); 
-        max-width: 250px; /* Adiciona um max-width para não esticar demais */
+        width: calc(100% - 3rem);
+        max-width: 250px;
         box-sizing: border-box;
         text-align: center;
         border-radius: 10px !important;
@@ -222,61 +299,29 @@ button:hover {
         color: white !important;
         font-weight: bold;
     }
-    
-    /* -------------------------------------------------- */
-    /* OVERLAY: Escurece a tela ao abrir o menu (Simulação) */
-    /* -------------------------------------------------- */
 
     .nav.open ~ :not(header) {
-        /* MUDANÇA: Ajuste o nível de escurecimento se necessário */
-        filter: brightness(0.6); 
+        filter: brightness(0.6);
         transition: filter 0.4s ease;
-        pointer-events: none; 
+        pointer-events: none;
     }
 
-    /* -------------------------------------------------------------------------- */
-    /* OTIMIZAÇÃO DO HERO (Mantidas as regras de responsividade) */
-    /* -------------------------------------------------------------------------- */
-    
-    .animated-hero {
-        padding: 5rem 1rem 3rem 1rem; 
-        min-height: 80vh; 
-        flex-direction: column; 
-    }
-    
-    .hero-action-button {
-        order: -1; 
-        margin-top: 0 !important;
-        margin-bottom: 2rem;
-    }
-    
-    .heroTitle {
-        font-size: 2.2rem !important; 
-        line-height: 1.15 !important;
+    /* Ajustes para o Carrossel em Mobile */
+    :root {
+        --carousel-height: 300px;
     }
 
-    .heroDescription {
-        font-size: 1rem !important;
-        display: -webkit-box;
-        -webkit-line-clamp: 4; 
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        margin-bottom: 1.5rem;
-    }
-    
-    .contentBlock {
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
+    .carousel-caption h4 {
+        font-size: 1.4rem;
     }
 
-    .grid {
-        grid-template-columns: 1fr; 
+    .carousel-caption p {
+        font-size: 0.85rem;
     }
 
-    .pinterestGrid {
-        column-count: 2; 
-        padding: 0 1rem;
+    .carousel-nav-button {
+        width: 40px;
+        height: 40px;
+        font-size: 1.5rem;
     }
 }

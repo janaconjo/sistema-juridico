@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Chatbot from './Chatbot';
 import { useNavigate } from 'react-router-dom';
-import { auth } from '../Firebase/Firebase.js';
+// import { auth } from '../Firebase/Firebase.js'; // Descomente se estiver usando Firebase
 import './Home.css';
 
 
@@ -17,57 +17,80 @@ const colorPalette = {
 const Home = () => {
     const navigate = useNavigate();
     const [isChatOpen, setIsChatOpen] = useState(false);
-    const [selectedImage, setSelectedImage] = useState(null);
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
-
-    // NOVO ESTADO PARA O MENU HAMBÚRGUER
+    // const [isLoggedIn, setIsLoggedIn] = useState(false); // Descomente se for usar o estado de login
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
 
-    const [currentSlide, setCurrentSlide] = useState(0);
-    const backgroundImages = [
+    // Estados para o Carrossel do Hero
+    const [currentHeroSlide, setCurrentHeroSlide] = useState(0);
+    const heroBackgroundImages = [
         '/assets/img/CONTRATOSIMPLES.jpg',
         '/assets/img/closeup-businesspeople-handshake.jpg',
         '/public/assets/img/job.jpg',
     ];
 
+    // Novo estado para o Carrossel da Galeria
+    const [currentGallerySlide, setCurrentGallerySlide] = useState(0);
 
-    useEffect(() => {
-        const interval = setInterval(() => {
-            setCurrentSlide((prevSlide) =>
-                (prevSlide + 1) % backgroundImages.length
-            );
-        }, 5000);
-
-        return () => clearInterval(interval);
-    }, [backgroundImages.length]);
-
-
-    const galleryImages = [
-        'src/assets/img/idosos.jpg',
-        'src/assets/img/closeup-businesspeople-handshake.jpg',
-        'src/assets/img/photorealistic-lawyer-environment.jpg',
-        'src/assets/img/still-life-with-scales-justice.jpg',
-        'src/assets/img/front-view-smiley-female-judge.jpg',
-        'src/assets/img/happy-friends-hugging-medium-shot.jpg',
-        'src/assets/img/right-4703926_1280.jpg',
-        'src/assets/img/premium_photo-1661497281000-b5ecb39a2114.avif',
+    // Dados para a Galeria do Carrossel (Simplificados, foco na imagem)
+    const galleryCarouselItems = [
+        {
+            src: '/assets/img/closeup-businesspeople-handshake.jpg',
+            title: 'Parceria',
+            fullDescription: 'Acordo histórico que beneficiou centenas de famílias em nossa comunidade.'
+        },
+        {
+            src: '/assets/img/job.jpg',
+            title: 'Inovação',
+            fullDescription: 'Implementação de novas tecnologias e métodos no suporte jurídico para melhor atendimento.'
+        },
+        {
+            src: '/assets/img/CONTRATOSIMPLES.jpg',
+            title: 'Expansão',
+            fullDescription: 'Abertura de novos escritórios e expansão para atender mais regiões e pessoas.'
+        },
+        {
+            src: '/assets/img/closeup-businesspeople-handshake.jpg',
+            title: 'Comunidade',
+            fullDescription: 'Eventos e workshops gratuitos para capacitação jurídica e conscientização social.'
+        },
+        {
+            src: '/assets/img/analise2avif.avif', 
+            title: 'Assistência',
+            fullDescription: 'Projeto de assistência legal a minorias e grupos vulneráveis da sociedade.'
+        },
+        {
+            src: '/assets/img/Educacao.jpg', 
+            title: 'Educação',
+            fullDescription: 'Iniciativas educacionais para descomplicar o direito e tornar a justiça acessível a todos.'
+        },
     ];
 
-    const handleImageClick = (src) => {
-        setSelectedImage(src);
+    // Efeito para o Carrossel do Hero
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setCurrentHeroSlide((prevSlide) =>
+                (prevSlide + 1) % heroBackgroundImages.length
+            );
+        }, 5000); // Muda a cada 5 segundos
+        return () => clearInterval(interval);
+    }, [heroBackgroundImages.length]);
+
+    // Funções para navegar no Carrossel da Galeria
+    const nextGallerySlide = () => {
+        setCurrentGallerySlide((prev) => (prev + 1) % galleryCarouselItems.length);
     };
 
-    const closeModal = () => {
-        setSelectedImage(null);
+    const prevGallerySlide = () => {
+        setCurrentGallerySlide((prev) =>
+            (prev - 1 + galleryCarouselItems.length) % galleryCarouselItems.length
+        );
     };
+
 
     // Função para fechar o menu ao clicar em um link
     const handleLinkClick = (hash) => {
         setIsMenuOpen(false); // Fecha o menu ao clicar em um link
-        // Navega para a seção
-        // O `Maps` do `react-router-dom` é tipicamente usado para rotas diferentes.
-        // Para navegação dentro da mesma página (hash links), você pode usar window.location.hash
         window.location.hash = hash;
     };
 
@@ -90,14 +113,13 @@ const Home = () => {
 
                 {/* NAV DESKTOP E MOBILE (usa className 'nav' para o CSS) */}
                 <nav className={`nav ${isMenuOpen ? 'open' : ''}`}>
-                    <a href="#sobre" style={styles.link} onClick={() => handleLinkClick('sobre')}>Sobre</a>
                     <a href="#Serviços" style={styles.link} onClick={() => handleLinkClick('Serviços')}>Serviços</a>
+                    <a href="#sobre" style={styles.link} onClick={() => handleLinkClick('sobre')}>Sobre/Galeria</a>
                     <a href="#materiais" style={styles.link} onClick={() => handleLinkClick('materiais')}>Materiais</a>
 
                     <button
                         onClick={() => navigate('/Cadastro')}
                         style={styles.registerButton}
-                        // Adicionado className para aplicar estilos de mobile se necessário
                         className="register-button-nav"
                     >
                         Cadastre-se
@@ -106,16 +128,15 @@ const Home = () => {
             </header>
 
 
+            {/* 1. SEÇÃO HERO */}
             <section
                 style={{
                     ...styles.heroWithBackground,
-                    backgroundImage: `url(${backgroundImages[currentSlide]})`,
+                    backgroundImage: `url(${heroBackgroundImages[currentHeroSlide]})`,
                 }}
                 className="animated-hero"
             >
-
                 <div style={styles.overlay}></div>
-
                 <h1
                     style={styles.heroTitle}
                     className="animated-item delay-1"
@@ -135,61 +156,98 @@ const Home = () => {
                         backgroundColor: colorPalette.secondary,
                         zIndex: 10,
                     }}
-                    className="animated-item delay-3"
+                    className="animated-item delay-3 hero-action-button"
                     onClick={() => navigate('/Cadastro')}
                 >
                     Agendar atendimento
                 </button>
             </section>
-            <section id="sobre" style={styles.section}>
-                <h2 style={{ textAlign: 'center', marginBottom: '2rem', color: colorPalette.text }}>Missão do IPAJ</h2>
+
+            {/* 2. SERVIÇOS (COM CARDS PADRONIZADOS) */}
+            <section id="Serviços" style={styles.sectionAlt}>
+                <h2 style={{ color: colorPalette.text, textAlign: 'center' }}>Nossos Principais Serviços e Ferramentas</h2>
                 <p style={{ maxWidth: '800px', margin: '0 auto 3rem auto', textAlign: 'center', color: colorPalette.text }}>
-                    A missão do IPAJ é garantir o acesso à justiça a todos os cidadãos, especialmente os mais
-                    vulneráveis, oferecendo assistência jurídica gratuita e informação clara sobre direitos e deveres.
+                    Acesso facilitado à justiça através de tecnologia de ponta,
+                    desenvolvida para a sua tranquilidade.
                 </p>
-                <div style={styles.pinterestGrid}>
-                    {galleryImages.map((src, index) => (
-                        <img
-                            key={index}
-                            src={src}
-                            alt={`Foto ${index + 1}`}
-                            style={styles.pinterestImage}
-                            onClick={() => handleImageClick(src)}
-                            loading="lazy"
-                        />
+                <div style={styles.grid}>
+                    {/* Card 1 - Chatbot */}
+                    <div className="service-card" style={styles.card}> 
+                        <img src="src/assets/img/5208996.jpg" alt="Chatbot" style={styles.icon} />
+                        <h3>Chatbot Jurídico 24/7</h3>
+                        <p style={{ color: colorPalette.text }}>💬 Obtenha respostas imediatas para dúvidas jurídicas básicas com nossa IA especializada.</p>
+                    </div>
+                    {/* Card 2 - Análise de Documentos */}
+                    <div className="service-card" style={styles.card}>
+                        <img src="src/assets/img/4906435.jpg" alt="Contratos" style={styles.icon} />
+                        <h3>Análise de Documentos</h3>
+                        <p style={{ color: colorPalette.text }}>📄 Envie seus contratos ou documentos para uma análise rápida e segura por advogados qualificados.</p>
+                    </div>
+                    {/* Card 3 - Materiais Educativos */}
+                    <div className="service-card" style={styles.card}>
+                        <img src="src/assets/img/VEC SAV 285-25.jpg" alt="Materiais" style={styles.icon} />
+                        <h3>Materiais Educativos</h3>
+                        <p style={{ color: colorPalette.text }}>📚 Acesse guias, vídeos e artigos simplificados para entender melhor seus direitos e deveres.</p>
+                    </div>
+                    {/* Card 4 - Agendamento Fácil (PADRONIZADO) */}
+                    <div className="service-card" style={styles.card}>
+                        <img src="src/assets/img/analise2avif.avif" alt="Upload" style={styles.icon} />
+                        <h3>Agendamento Fácil</h3>
+                        <p style={{ color: colorPalette.text }}>📅 Precisa de ajuda? Agende uma consulta presencial ou online com nossos especialistas.</p>
+                        <button
+                            onClick={() => navigate('/Cadastro')}
+                            style={{...styles.button, backgroundColor: colorPalette.primary, marginTop: '0.5rem'}}
+                        >
+                            Agendar Agora
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+
+            {/* 3. GALERIA - CARROSSEL COM CURVATURA */}
+            <section id="sobre" style={styles.section}>
+                <h2 style={{ textAlign: 'center', marginBottom: '1rem', color: colorPalette.text }}>Sobre o IPAJ e Nosso Impacto</h2>
+                <p style={{ maxWidth: '800px', margin: '0 auto 3rem auto', textAlign: 'center', color: colorPalette.text }}>
+                    Desde a nossa fundação, o IPAJ tem sido um pilar na comunidade, oferecendo patrocínio jurídico de qualidade. Acreditamos que o acesso à justiça deve ser um direito, e não um privilégio. A transparência e o compromisso social guiam todas as nossas ações.
+                </p>
+
+                <h3 style={{ textAlign: 'center', margin: '3rem auto 2rem auto', color: colorPalette.primary }}>Nossa Jornada em Imagens</h3>
+
+                <div className="carousel-container">
+                    <button onClick={prevGallerySlide} className="carousel-nav-button prev">←</button>
+                    <div className="carousel-wrapper" style={{ transform: `translateX(-${currentGallerySlide * 100}%)` }}>
+                        {galleryCarouselItems.map((item, index) => (
+                            <div key={index} className="carousel-item">
+                                <img src={item.src} alt={item.title} className="carousel-image" />
+                                <div className="carousel-caption">
+                                    <h4>{item.title}</h4>
+                                    <p>{item.fullDescription}</p>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                    <button onClick={nextGallerySlide} className="carousel-nav-button next">→</button>
+                </div>
+
+                {/* Indicadores de slide (pontinhos) */}
+                <div style={styles.carouselIndicators}>
+                    {galleryCarouselItems.map((_, idx) => (
+                        <span
+                            key={idx}
+                            style={{
+                                ...styles.indicatorDot,
+                                backgroundColor: idx === currentGallerySlide ? colorPalette.primary : '#ccc'
+                            }}
+                            onClick={() => setCurrentGallerySlide(idx)}
+                        ></span>
                     ))}
                 </div>
             </section>
 
-            {selectedImage && (
-                <div style={styles.modal} onClick={closeModal}>
-                    <img src={selectedImage} alt="Imagem Ampliada" style={styles.modalImage} />
-                </div>
-            )}
 
-            <section id="Serviços" style={styles.sectionAlt}>
-                <h2 style={{ color: colorPalette.text }}>Principais Serviços</h2>
-                <div style={styles.grid}>
-                    <div style={styles.card}>
-                        <img src="src/assets/img/5208996.jpg" alt="Chatbot" style={styles.icon} />
-                        <p style={{ color: colorPalette.text }}>💬 Chatbot jurídico inteligente 24/7</p>
-                    </div>
-                    <div style={styles.card}>
-                        <img src="src/assets/img/4906435.jpg" alt="Contratos" style={styles.icon} />
-                        <p style={{ color: colorPalette.text }}>📄 Análise e explicação de contratos</p>
-                    </div>
-                    <div style={styles.card}>
-                        <img src="src/assets/img/VEC SAV 285-25.jpg" alt="Materiais" style={styles.icon} />
-                        <p style={{ color: colorPalette.text }}>📚 Acesso a materiais educativos</p>
-                    </div>
-                    <div style={styles.card}>
-                        <img src="src/assets/img/analise2avif.avif" alt="Upload" style={styles.icon} />
-                        <p style={{ color: colorPalette.text }}>📨 Upload de documentos para análise</p>
-                    </div>
-                </div>
-            </section>
-
-            <section id="materiais" style={styles.section}>
+            {/* 4. SEÇÃO MATERIAIS */}
+            <section id="materiais" style={styles.sectionAlt}>
                 <div style={styles.contentBlock}>
                     <div style={{ flex: 1 }}>
                         <img src="src/assets/img/Educacao.jpg" alt="Materiais" style={styles.image} />
@@ -207,6 +265,7 @@ const Home = () => {
                 </div>
             </section>
 
+            {/* CHATBOT & FOOTER */}
             <button
                 style={{
                     ...styles.chatbotButton,
@@ -214,6 +273,7 @@ const Home = () => {
                 }}
                 onClick={() => setIsChatOpen(!isChatOpen)}
                 title="Falar com o Assistente Jurídico"
+                className="chatbotButton"
             >
                 💬
             </button>
@@ -230,8 +290,8 @@ const Home = () => {
 export default Home;
 
 
+// ESTILOS JS (MANTIDOS E AJUSTADOS PARA REFLETIR AS MUDANÇAS)
 const styles = {
-    // ... (Seu objeto styles existente, com a adição do menu hambúrguer no final)
     baseContainer: {
         fontFamily: "Roboto, 'Segoe UI', Arial, sans-serif",
         backgroundColor: colorPalette.background,
@@ -263,16 +323,11 @@ const styles = {
         margin: 0,
         fontWeight: 'bold',
     },
-    // Removida a propriedade `nav` daqui para usar a classe CSS para a responsividade
-    // A navegação padrão está agora controlada principalmente pelo CSS
     link: {
         color: '#fff',
         textDecoration: 'none',
         fontWeight: '500',
         transition: 'color 0.3s ease',
-    },
-    linkHover: {
-        color: colorPalette.tertiary,
     },
     registerButton: {
         padding: '0.5rem 1.25rem',
@@ -349,7 +404,8 @@ const styles = {
     button: {
         marginTop: '1.5rem',
         padding: '0.75rem 2rem',
-        backgroundColor: colorPalette.primary,
+        // O Card 4 de Serviços usa colorPalette.primary como botão
+        backgroundColor: colorPalette.secondary, 
         color: '#fff',
         border: 'none',
         borderRadius: '8px',
@@ -413,42 +469,18 @@ const styles = {
         height: '50px',
         marginBottom: '0.75rem',
     },
-    pinterestGrid: {
-        columnCount: 3,
-        columnGap: '1rem',
-        maxWidth: '1000px',
-        margin: '0 auto',
-    },
-    pinterestImage: {
-        width: '100%',
-        marginBottom: '1rem',
-        borderRadius: '10px',
-        breakInside: 'avoid',
-        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-        cursor: 'pointer',
-        transition: 'transform 0.3s ease',
-    },
-    modal: {
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0.85)',
+    carouselIndicators: { // Estilos para os indicadores (pontinhos)
         display: 'flex',
         justifyContent: 'center',
-        alignItems: 'center',
-        zIndex: 10000,
+        marginTop: '1.5rem',
+        gap: '0.5rem',
     },
-    modalImage: {
-        maxWidth: '90%',
-        maxHeight: '90%',
-        borderRadius: '10px',
-        boxShadow: '0 0 20px rgba(0, 0, 0, 0.5)',
-    },
-    // NOVO ESTILO PARA O BOTÃO HAMBÚRGUER (desktop-first: esconder por padrão)
-    // Este estilo será sobrescrito pela media query para aparecer no mobile.
-    menuToggle: {
-        display: 'none', // Esconde em desktop
+    indicatorDot: {
+        width: '10px',
+        height: '10px',
+        borderRadius: '50%',
+        backgroundColor: '#ccc',
+        cursor: 'pointer',
+        transition: 'background-color 0.3s ease',
     },
 };
