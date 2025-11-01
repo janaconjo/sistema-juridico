@@ -76,7 +76,7 @@ const Home = () => {
         <div style={styles.baseContainer}>
             <header style={styles.header}>
                 <div style={styles.logoArea}>
-                    <img src="src/assets/img/logo.webp" alt="IPAJ" style={styles.logo} />
+                    <img src="/assets/img/OIP.webp" alt="IPAJ" style={styles.logo} />
                     <h2 style={styles.title}>IPAJ</h2>
                 </div>
 
