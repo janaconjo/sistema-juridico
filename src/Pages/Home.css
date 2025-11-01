@@ -1,0 +1,76 @@
+
+
+nav a:hover {
+    color: #f2f2f2;
+    transition: color 0.3s ease;
+}
+
+.pinterestImage:hover {
+    transform: scale(1.05);
+    transition: transform 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.chatbotButton:hover {
+    animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.15); }
+    100% { transform: scale(1); }
+}
+
+
+button:hover {
+    background-color: #006666 !important; 
+    transition: background-color 0.3s ease;
+}
+
+.animated-hero {
+    transition: background-image 1s ease-in-out;
+}
+
+
+.animated-item {
+    opacity: 0;
+    transform: translateY(20px); 
+    animation: fade-down 0.8s forwards;
+}
+
+
+@keyframes fade-down {
+    to {
+        opacity: 1;
+        transform: translateY(0); 
+    }
+}
+
+
+.animated-item.delay-1 {
+    animation-delay: 0.3s; 
+}
+
+.animated-item.delay-2 {
+    animation-delay: 0.6s; 
+}
+
+.animated-item.delay-3 {
+    animation-delay: 0.9s; 
+}
+
+.fade-in {
+    opacity: 0;
+    animation: fadeIn 1s forwards;
+}
+
+@keyframes fadeIn {
+    to {
+        opacity: 1;
+    }
+}

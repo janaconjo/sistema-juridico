@@ -1,0 +1,14 @@
+
+html, body, #root {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background: linear-gradient(to right, #eef2f7, #f9f9fb);
+}
+
+
+.container-full {
+  min-height: 100vh;
+  display: grid;
+}
