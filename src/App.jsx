@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Home from './Pages/Home';
 import AgendarAtendimento from './Pages/AgendarAtendimento';
 import Materiais from './Pages/Materiais';
-import Cadastro from './Pages/Cadastro';
+import Cadastro from './Pages/cadastro';
 import Advogado from './Pages/Advogado';
 
 function App() {
