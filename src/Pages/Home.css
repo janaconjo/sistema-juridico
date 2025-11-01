@@ -1,7 +1,26 @@
+/*
+ * --------------------------------------------------------------------------
+ * Estilos Gerais (Home.css)
+ *
+ * NOTA: Para que as variáveis de cor (colorPalette) funcionem corretamente, 
+ * você pode definir as variáveis CSS no nível :root ou usar os valores 
+ * hexadecimais diretamente no CSS, como foi feito aqui.
+ * --------------------------------------------------------------------------
+ */
 
+/* Variáveis de Cor (ajustadas a partir do seu JS) */
+:root {
+    --primary: #008080;
+    --secondary: #3cb371;
+    --tertiary: #e0f7f4;
+    --cardBackground: #ffffff;
+    --text: #2d3748;
+}
 
-nav a:hover {
-    color: #f2f2f2;
+/* Estilos de Interação (Hover) */
+
+.nav a:hover {
+    color: var(--tertiary); /* Link hover no desktop (branco -> cinza claro) */
     transition: color 0.3s ease;
 }
 
@@ -16,6 +35,7 @@ nav a:hover {
     transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
+/* Animação do Botão Chatbot */
 .chatbotButton:hover {
     animation: pulse 1s infinite;
 }
@@ -26,14 +46,19 @@ nav a:hover {
     100% { transform: scale(1); }
 }
 
-
+/* Hover do Botão Padrão */
 button:hover {
-    background-color: #006666 !important; 
+    background-color: #006666 !important; /* Cor um pouco mais escura que primary */
     transition: background-color 0.3s ease;
 }
 
+/* Animações de Entrada (Hero Section) */
+
 .animated-hero {
-    transition: background-image 1s ease-in-out;
+    /* Transição suave de fundo ao trocar as imagens */
+    transition: background-image 1s ease-in-out; 
+    /* Garante que o display flex esteja ativo para a ordem dos itens (mobile) */
+    display: flex; 
 }
 
 
@@ -64,19 +89,9 @@ button:hover {
     animation-delay: 0.9s; 
 }
 
-.fade-in {
-    opacity: 0;
-    animation: fadeIn 1s forwards;
-}
+/* Estilos para o Menu Hambúrguer (Desktop-First) */
 
-@keyframes fadeIn {
-    to {
-        opacity: 1;
-    }
-}
-/* Estilos para o Menu Hambúrguer (Mobile) */
-
-/* Esconde o botão de alternância do menu por padrão (em desktop) */
+/* Oculta o botão de alternância do menu por padrão (em desktop) */
 .menu-toggle {
     display: none;
     background: none;
@@ -84,91 +99,148 @@ button:hover {
     color: #fff;
     font-size: 2rem;
     cursor: pointer;
-    z-index: 1001; /* Garante que fique em cima */
+    z-index: 1001;
     padding: 0;
 }
 
-/* Estilo para o botão de cadastro no mobile, para ficar dentro do menu */
-.nav .register-button-nav {
-    width: 90%;
-    margin-top: 1rem;
-    padding: 1rem;
-    text-align: center;
+/* Configuração da NAV no Desktop */
+.nav {
+    display: flex;
+    gap: 2rem;
+    align-items: center;
+    justify-content: center;
 }
 
+
 /* -------------------------------------------------------------------------- */
-/* MEDIA QUERY: Aplica estilos em telas menores que 900px */
+/* MEDIA QUERY: RESPONSIVIDADE (Telas menores que 900px) */
 /* -------------------------------------------------------------------------- */
 @media (max-width: 900px) {
 
-    /* Exibe o botão de alternância do menu */
+    /* HEADER */
     .menu-toggle {
-        display: block;
+        display: block; /* Exibe o botão de alternância do menu */
     }
 
-    /* Esconde a navegação padrão (desktop) */
+    /* MENU LATERAL (Slide-in) */
     .nav {
-        display: none; /* Escondido por padrão no mobile */
-        position: absolute;
-        top: 100%; /* Abaixo do header */
+        /* Esconde a navegação padrão (desktop) e transforma em slide lateral */
+        position: fixed; /* Troca para fixed para cobrir toda a tela */
+        top: 60px; /* Abaixo do header */
         left: 0;
         width: 100%;
-        height: 100vh; /* Ocupa a altura total da viewport */
+        height: 100vh;
         flex-direction: column;
         align-items: center;
-        background-color: var(--primary, #008080); /* Cor de fundo do header */
+        background-color: var(--primary);
         padding: 2rem 0;
         box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-        transition: transform 0.3s ease-in-out;
-        transform: translateX(-100%); /* Começa fora da tela */
+        transform: translateX(-100%); /* Começa fora da tela (esquerda) */
+        transition: transform 0.4s ease-out; /* Transição de slide */
         z-index: 999;
     }
 
-    /* Quando a classe 'open' é aplicada, o menu aparece */
+    /* Efeito de abertura do menu */
     .nav.open {
-        display: flex;
         transform: translateX(0); /* Entra na tela */
     }
 
-    /* Estilo dos links no menu mobile */
+    /* Estilo e Animação dos Links no Menu Mobile */
     .nav a {
         padding: 1rem 0;
         width: 90%;
         text-align: center;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        /* Linhas divisórias (border-bottom) REMOVIDAS conforme solicitado */
         font-size: 1.25rem;
+        color: #fff;
+        text-decoration: none;
+        
+        /* Configuração inicial para animação de fade-in */
+        opacity: 0; 
+        transform: translateY(-10px); 
+        transition: opacity 0.3s ease, transform 0.3s ease; 
+    }
+    
+    /* Animação de itens em cascata */
+    .nav.open a {
+        opacity: 1; 
+        transform: translateY(0);
     }
 
-    /* Remove a borda do último link */
-    .nav a:last-of-type {
-        border-bottom: none;
+    .nav.open a:nth-child(1) { transition-delay: 0.1s; }
+    .nav.open a:nth-child(2) { transition-delay: 0.2s; }
+    .nav.open a:nth-child(3) { transition-delay: 0.3s; }
+
+    /* Estilo e Animação do Botão de Cadastro no Menu Mobile */
+    .register-button-nav {
+        width: 90%;
+        margin-top: 1rem;
+        padding: 1rem;
+        text-align: center;
+        
+        /* Aplica a mesma animação em cascata */
+        opacity: 0;
+        transform: translateY(-10px);
+        transition: opacity 0.3s ease, transform 0.3s ease; 
     }
 
-    /* Ajuste para o bloco de conteúdo (seções) em telas pequenas */
+    .nav.open .register-button-nav {
+        opacity: 1;
+        transform: translateY(0);
+        transition-delay: 0.4s;
+    }
+    
+    /* -------------------------------------------------------------------------- */
+    /* OTIMIZAÇÃO DO HERO (Diminuir o texto e subir o botão) */
+    /* -------------------------------------------------------------------------- */
+    
+    .animated-hero {
+        padding: 5rem 1rem 3rem 1rem; 
+        min-height: 80vh; 
+    }
+    
+    /* Reposiciona o botão de agendamento (hero-action-button) para o topo */
+    .hero-action-button {
+        order: -1; 
+        margin-top: 0;
+        margin-bottom: 2rem;
+    }
+    
+    .heroTitle {
+        font-size: 2.2rem !important; 
+        line-height: 1.15 !important;
+    }
+
+    .heroDescription {
+        font-size: 1rem !important;
+        /* Limita a visualização do texto a 4 linhas */
+        display: -webkit-box;
+        -webkit-line-clamp: 4; 
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin-bottom: 1.5rem;
+    }
+    
+    /* -------------------------------------------------------------------------- */
+    /* OUTRAS SEÇÕES (Layout de coluna única para mobile) */
+    /* -------------------------------------------------------------------------- */
+
+    /* Bloco de conteúdo (Material Educativo) */
     .contentBlock {
         flex-direction: column;
         align-items: center;
         text-align: center;
     }
 
-    /* Ajuste do grid de serviços */
+    /* Grid de serviços */
     .grid {
-        grid-template-columns: 1fr; /* Uma coluna apenas */
+        grid-template-columns: 1fr; 
     }
 
-    /* Ajuste para a grade de imagens (pinterest) */
+    /* Grade de imagens (pinterest) */
     .pinterestGrid {
-        column-count: 2; /* Deixa com 2 colunas */
+        column-count: 2; 
         padding: 0 1rem;
     }
-
-    /* Ajuste do título e descrição no HERO para mobile */
-    .heroTitle {
-        font-size: 2rem !important;
-    }
-
-    .heroDescription {
-        font-size: 1rem !important;
-    }
 }
-/* -------------------------------------------------------------------------- */
