@@ -1,7 +1,7 @@
 /*
  * --------------------------------------------------------------------------
  * Home.css - Estilos Completos e Responsivos
- * Versão: Menu Lateral Mobile (Design App, Sem Perfil)
+ * Versão: Menu Lateral Mobile (Verde Transparente, Centralizado)
  * --------------------------------------------------------------------------
  */
 
@@ -10,9 +10,10 @@
     --primary: #008080;
     --secondary: #3cb371;
     --tertiary: #e0f7f4;
-    --cardBackground: #ffffff;
+    /* MUDANÇA: Fundo do cartão/menu (verde suave semi-transparente) */
+    --cardBackground: rgba(224, 247, 244, 0.9); /* Usando a cor tertiary com 90% de opacidade */
     --text: #2d3748;
-    --menuWidth: 300px; /* Largura para o menu mobile */
+    --menuWidth: 300px; 
 }
 
 /* -------------------------------------------------------------------------- */
@@ -20,7 +21,7 @@
 /* -------------------------------------------------------------------------- */
 
 .nav a:hover {
-    color: var(--tertiary); /* Link hover no desktop */
+    color: var(--tertiary); 
     transition: color 0.3s ease;
 }
 
@@ -136,43 +137,48 @@ button:hover {
     }
     
     /* -------------------------------------------------- */
-    /* MENU LATERAL (.nav): Estilo App */
+    /* MENU LATERAL (.nav): Estilo App - MUDANÇAS APLICADAS */
     /* -------------------------------------------------- */
 
     .nav {
-        /* Desativa o display flex/inline do desktop */
         display: flex; 
         flex-direction: column;
+        /* MUDANÇA: Centraliza o conteúdo verticalmente */
+        justify-content: center; 
         
         position: fixed; 
-        top: 0; /* Começa do topo */
+        top: 0; 
         right: 0; 
         
-        width: 80%; /* Ocupa 80% da tela (melhor usabilidade) */
-        max-width: var(--menuWidth); /* Limita a largura em telas maiores */
+        width: 80%; 
+        max-width: var(--menuWidth); 
         
-        height: 100vh; /* Ocupa toda a altura da tela */
+        height: 100vh; /* Mantido 100vh para permitir o justify-content: center */
         
-        background-color: var(--cardBackground); /* Fundo branco (Design App) */
+        background-color: var(--cardBackground); /* VERDE TRANSPARENTE */
         
-        /* Canto superior esquerdo arredondado */
         border-radius: 20px 0 0 20px; 
         box-shadow: -4px 0 20px rgba(0, 0, 0, 0.2);
         
-        /* ANIMAÇÃO: Inicia 100% deslocado para a DIREITA (fora da tela) */
         transform: translateX(100%); 
         transition: transform 0.4s ease-in-out; 
         
         z-index: 1001;
         overflow-y: auto; 
         
-        /* Adiciona padding interno */
-        padding: 1rem 0; 
+        padding: 0; 
     }
-
+    
     /* Efeito de abertura do menu */
     .nav.open {
         transform: translateX(0); 
+    }
+    
+    /* -------------------------------------------------- */
+    /* REMOÇÃO DO 'X' - Remove o pseudo-elemento */
+    /* -------------------------------------------------- */
+    .nav::before {
+        content: none; /* Remove o 'X' */
     }
     
     /* -------------------------------------------------- */
@@ -180,52 +186,56 @@ button:hover {
     /* -------------------------------------------------- */
 
     .nav a {
-        /* Garante que os links tenham o design "clean" do app */
-        padding: 1rem 1.5rem;
+        display: flex;
+        /* MUDANÇA: Centraliza o texto horizontalmente */
+        justify-content: center; 
+        padding: 0.75rem 1.5rem; 
         width: 100%;
         box-sizing: border-box;
-        text-align: left; /* Alinha o texto à esquerda */
-        color: var(--text) !important; /* Cor de texto padrão */
+        text-align: center; /* Garante que o texto fique centrado */
+        color: var(--text) !important; 
         font-weight: 500;
-        /* Adiciona o hover do link para o design app */
+        text-decoration: none;
+        
+        margin: 0.25rem 0; 
+        border-radius: 0 10px 10px 0; 
+        
         transition: background-color 0.2s ease, color 0.2s ease;
     }
 
     .nav a:hover {
-        background-color: var(--tertiary); /* Fundo no hover */
-        color: var(--primary) !important; /* Cor de destaque no hover */
+        background-color: var(--tertiary); 
+        color: var(--primary) !important; 
     }
 
     /* Estilo para o Botão "Cadastre-se" no menu mobile */
     .register-button-nav {
-        margin: 1rem 1.5rem;
-        padding: 1rem;
-        width: calc(100% - 3rem); /* Ocupa a largura total com padding */
+        /* MUDANÇA: Centraliza o botão dentro da nav */
+        margin: 2rem auto 1rem auto; /* 'auto' centraliza horizontalmente */
+        padding: 0.75rem 1rem;
+        width: calc(100% - 3rem); 
+        max-width: 250px; /* Adiciona um max-width para não esticar demais */
+        box-sizing: border-box;
         text-align: center;
         border-radius: 10px !important;
         background-color: var(--secondary) !important;
         color: white !important;
+        font-weight: bold;
     }
     
     /* -------------------------------------------------- */
-    /* OVERLAY: Escurece a tela ao abrir o menu (Simulação no CSS) */
+    /* OVERLAY: Escurece a tela ao abrir o menu (Simulação) */
     /* -------------------------------------------------- */
-    /* Como você não pode mudar o JSX, vamos escurecer o corpo se o menu estiver aberto.
-       Adicione a classe 'menu-open-body' ao elemento pai (body ou root div) no seu JSX se possível.
-       Se não puder, o efeito só funcionará se o elemento que contém o menu estiver fora do header.
-       
-       Vou adicionar um filtro de escurecimento genérico para o corpo.
-    */
 
     .nav.open ~ :not(header) {
-        /* Tenta escurecer o conteúdo que não é o header */
-        filter: brightness(0.8);
+        /* MUDANÇA: Ajuste o nível de escurecimento se necessário */
+        filter: brightness(0.6); 
         transition: filter 0.4s ease;
-        pointer-events: none; /* Desabilita clique no conteúdo principal */
+        pointer-events: none; 
     }
 
     /* -------------------------------------------------------------------------- */
-    /* OTIMIZAÇÃO DO HERO (Diminuir o texto e subir o botão) */
+    /* OTIMIZAÇÃO DO HERO (Mantidas as regras de responsividade) */
     /* -------------------------------------------------------------------------- */
     
     .animated-hero {
@@ -234,7 +244,6 @@ button:hover {
         flex-direction: column; 
     }
     
-    /* Reposiciona o botão de agendamento (hero-action-button) para o topo */
     .hero-action-button {
         order: -1; 
         margin-top: 0 !important;
@@ -256,10 +265,6 @@ button:hover {
         margin-bottom: 1.5rem;
     }
     
-    /* -------------------------------------------------------------------------- */
-    /* OUTRAS SEÇÕES (Layout de coluna única para mobile) */
-    /* -------------------------------------------------------------------------- */
-
     .contentBlock {
         flex-direction: column;
         align-items: center;
