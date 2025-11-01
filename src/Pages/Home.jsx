@@ -130,7 +130,7 @@ const Home = () => {
 
                 <nav className={`nav ${isMenuOpen ? 'open' : ''}`}>
                     <a href="#Serviços" style={styles.link} onClick={() => handleLinkClick('Serviços')}>Serviços</a>
-                    <a href="#sobre" style={styles.link} onClick={() => handleLinkClick('sobre')}>Sobre/Impacto</a>
+                    <a href="#sobre" style={styles.link} onClick={() => handleLinkClick('sobre')}>Sobre Nós</a>
                     <a href="#materiais" style={styles.link} onClick={() => handleLinkClick('materiais')}>Materiais</a>
 
                     <button
@@ -182,7 +182,7 @@ const Home = () => {
             {/* 2. SEÇÃO SERVIÇOS */}
             <section id="Serviços" style={styles.section}> {/* ID e SEÇÃO PADRÃO */}
                 <h2 style={styles.sectionTitle}>
-                    Nossos <strong>Serviços</strong> e Ferramentas Essenciais
+                    Nossos <strong>Serviços</strong> 
                 </h2> {/* CORRIGIDO */}
                 <p style={styles.sectionSubtitle}>
                     Utilize nossa plataforma moderna para desburocratizar o acesso à justiça.
@@ -210,14 +210,14 @@ const Home = () => {
 
             {/* 3. SEÇÃO SOBRE/IMPACTO */}
             <section id="sobre" style={styles.sectionAlt}> {/* ID e SEÇÃO ALTERNATIVA */}
-                <h2 style={styles.sectionTitleAlt}>
-                    <strong>Sobre</strong> Nós: Nosso Impacto e Trajetória
+                <h2 style={styles.sectionTitle}>
+                    <strong>Sobre</strong> Nós
                 </h2> {/* CORRIGIDO */}
                 <p style={styles.sectionSubtitleAlt}>
                     Comprometimento com a comunidade e com a excelência no patrocínio jurídico.
                 </p>
 
-                <h3 style={{ textAlign: 'center', margin: '3rem auto 2rem auto', color: colorPalette.primary }}>Momentos Chave da Nossa Jornada</h3>
+    
 
                 <div className="carousel-container">
                     <button onClick={prevGallerySlide} className="carousel-nav-button prev">←</button>
@@ -256,8 +256,8 @@ const Home = () => {
             <section id="materiais" style={styles.section}> {/* ID e SEÇÃO PADRÃO */}
                 <div style={styles.contentBlock}>
                     <div style={{ flex: 1, minWidth: '300px' }}>
-                        <h2 style={{ color: colorPalette.text, fontSize: '2.5rem' }}>
-                            <strong>Materiais</strong> Educativos e de Apoio
+                        <h2  style={styles.sectionTitle}>
+                            <strong>Materiais</strong> Educativos 
                         </h2> {/* CORRIGIDO */}
                         <p style={{ color: colorPalette.text, marginBottom: '2rem' }}>
                             Acesse guias, vídeos e artigos simples sobre direito do trabalho, família, heranças e contratos. Nossa biblioteca é constantemente atualizada para mantê-lo informado.
