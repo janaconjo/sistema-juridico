@@ -1,25 +1,25 @@
 /*
  * --------------------------------------------------------------------------
  * Home.css - Estilos Completos e Responsivos
- * Versão: Novo Menu Lateral (Estilo APP - Slide In)
+ * Versão: Menu Lateral Mobile (Design App, Sem Perfil)
  * --------------------------------------------------------------------------
  */
 
-/* Variáveis de Cor (ajustadas a partir do seu JS) */
+/* Variáveis de Cor */
 :root {
     --primary: #008080;
     --secondary: #3cb371;
     --tertiary: #e0f7f4;
     --cardBackground: #ffffff;
     --text: #2d3748;
-    --menuWidth: 300px; /* Largura padrão do menu lateral */
+    --menuWidth: 300px; /* Largura para o menu mobile */
 }
 
 /* -------------------------------------------------------------------------- */
 /* Estilos de Interação (Hover) */
 /* -------------------------------------------------------------------------- */
 
-.nav-desktop a:hover {
+.nav a:hover {
     color: var(--tertiary); /* Link hover no desktop */
     transition: color 0.3s ease;
 }
@@ -48,10 +48,9 @@
 
 /* Hover do Botão Padrão */
 button:hover {
-    background-color: #006666 !important; /* Cor um pouco mais escura que primary */
+    background-color: #006666 !important; 
     transition: background-color 0.3s ease;
 }
-
 
 /* -------------------------------------------------------------------------- */
 /* Animações de Entrada (Hero Section) */
@@ -88,7 +87,7 @@ button:hover {
 }
 
 /* -------------------------------------------------------------------------- */
-/* Estilos de Navegação (Desktop) */
+/* Estilos de Navegação (Desktop-First) */
 /* -------------------------------------------------------------------------- */
 
 /* Oculta o botão de alternância do menu por padrão (em desktop) */
@@ -103,19 +102,13 @@ button:hover {
     padding: 0;
 }
 
-/* Oculta o novo menu lateral no desktop */
-.side-menu {
-    display: none;
-}
-
-/* Configuração da NAV no Desktop */
-.nav-desktop {
+/* Configuração da NAV no Desktop (usa a classe .nav) */
+.nav {
     display: flex;
     gap: 2rem;
     align-items: center;
     justify-content: center;
 }
-
 
 /* -------------------------------------------------------------------------- */
 /* MEDIA QUERY: RESPONSIVIDADE (Telas menores que 900px) */
@@ -128,11 +121,6 @@ button:hover {
         min-height: 60px; 
         position: relative; 
         z-index: 1000; 
-    }
-
-    /* Oculta a navegação padrão (desktop) */
-    .nav-desktop {
-        display: none;
     }
 
     /* Exibe e alinha o Botão Hambúrguer */
@@ -148,25 +136,26 @@ button:hover {
     }
     
     /* -------------------------------------------------- */
-    /* NOVO MENU LATERAL: Estilo App */
+    /* MENU LATERAL (.nav): Estilo App */
     /* -------------------------------------------------- */
 
-    .side-menu {
-        display: flex;
+    .nav {
+        /* Desativa o display flex/inline do desktop */
+        display: flex; 
         flex-direction: column;
         
         position: fixed; 
         top: 0; /* Começa do topo */
         right: 0; 
         
-        width: 80%; /* Ocupa 80% da tela (melhor que 50% para usabilidade mobile) */
-        max-width: var(--menuWidth); /* Limita a largura em telas maiores (e.g. tablet) */
+        width: 80%; /* Ocupa 80% da tela (melhor usabilidade) */
+        max-width: var(--menuWidth); /* Limita a largura em telas maiores */
         
         height: 100vh; /* Ocupa toda a altura da tela */
         
-        background-color: var(--cardBackground); /* Fundo branco */
+        background-color: var(--cardBackground); /* Fundo branco (Design App) */
         
-        /* Canto arredondado conforme a imagem de referência */
+        /* Canto superior esquerdo arredondado */
         border-radius: 20px 0 0 20px; 
         box-shadow: -4px 0 20px rgba(0, 0, 0, 0.2);
         
@@ -176,56 +165,65 @@ button:hover {
         
         z-index: 1001;
         overflow-y: auto; 
+        
+        /* Adiciona padding interno */
+        padding: 1rem 0; 
     }
 
     /* Efeito de abertura do menu */
-    .side-menu.open {
+    .nav.open {
         transform: translateX(0); 
     }
     
-    /* Botão de Fechar (X) dentro do menu */
-    .side-menu .close-menu-button {
-        position: absolute;
-        top: 15px;
-        right: 15px;
-        background: none;
-        border: none;
-        font-size: 1.5rem;
-        color: var(--text);
-        cursor: pointer;
-        padding: 0;
-        line-height: 1;
-    }
-    
     /* -------------------------------------------------- */
-    /* OVERLAY: Escurece a tela ao abrir o menu */
+    /* ESTILOS DOS LINKS DENTRO DO NOVO MENU MOBILE */
     /* -------------------------------------------------- */
-    .menu-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
+
+    .nav a {
+        /* Garante que os links tenham o design "clean" do app */
+        padding: 1rem 1.5rem;
         width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.5); /* Fundo escuro */
-        z-index: 1000;
-        opacity: 1;
-        transition: opacity 0.4s ease;
-    }
-    
-    /* Ajuste para o botão de cadastro no menu (usa o estilo do link) */
-    .side-menu-register {
-        /* Garante que o botão use a largura total do espaço do link */
-        width: calc(100% - 1rem); 
         box-sizing: border-box;
-        text-align: left;
-        display: flex;
-        align-items: center;
+        text-align: left; /* Alinha o texto à esquerda */
+        color: var(--text) !important; /* Cor de texto padrão */
+        font-weight: 500;
+        /* Adiciona o hover do link para o design app */
+        transition: background-color 0.2s ease, color 0.2s ease;
+    }
+
+    .nav a:hover {
+        background-color: var(--tertiary); /* Fundo no hover */
+        color: var(--primary) !important; /* Cor de destaque no hover */
+    }
+
+    /* Estilo para o Botão "Cadastre-se" no menu mobile */
+    .register-button-nav {
+        margin: 1rem 1.5rem;
+        padding: 1rem;
+        width: calc(100% - 3rem); /* Ocupa a largura total com padding */
+        text-align: center;
+        border-radius: 10px !important;
         background-color: var(--secondary) !important;
         color: white !important;
-        /* Sobrescreve a margem lateral do link (se houver) */
-        margin-left: 0 !important; 
     }
     
+    /* -------------------------------------------------- */
+    /* OVERLAY: Escurece a tela ao abrir o menu (Simulação no CSS) */
+    /* -------------------------------------------------- */
+    /* Como você não pode mudar o JSX, vamos escurecer o corpo se o menu estiver aberto.
+       Adicione a classe 'menu-open-body' ao elemento pai (body ou root div) no seu JSX se possível.
+       Se não puder, o efeito só funcionará se o elemento que contém o menu estiver fora do header.
+       
+       Vou adicionar um filtro de escurecimento genérico para o corpo.
+    */
+
+    .nav.open ~ :not(header) {
+        /* Tenta escurecer o conteúdo que não é o header */
+        filter: brightness(0.8);
+        transition: filter 0.4s ease;
+        pointer-events: none; /* Desabilita clique no conteúdo principal */
+    }
+
     /* -------------------------------------------------------------------------- */
     /* OTIMIZAÇÃO DO HERO (Diminuir o texto e subir o botão) */
     /* -------------------------------------------------------------------------- */
@@ -233,7 +231,7 @@ button:hover {
     .animated-hero {
         padding: 5rem 1rem 3rem 1rem; 
         min-height: 80vh; 
-        flex-direction: column; /* Garante que os itens fiquem em coluna */
+        flex-direction: column; 
     }
     
     /* Reposiciona o botão de agendamento (hero-action-button) para o topo */
