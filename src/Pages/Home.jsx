@@ -256,7 +256,7 @@ const Home = () => {
             <section id="materiais" style={styles.section}> {/* ID e SEÇÃO PADRÃO */}
                 <div style={styles.contentBlock}>
                     <div style={{ flex: 1, minWidth: '300px' }}>
-                        <h2  style={styles.sectionTitle}>
+                        <h2 id="materiais1">
                             <strong>Materiais</strong> Educativos 
                         </h2> {/* CORRIGIDO */}
                         <p style={{ color: colorPalette.text, marginBottom: '2rem' }}>

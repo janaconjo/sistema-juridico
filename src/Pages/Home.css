@@ -1,8 +1,17 @@
 /*
  * --------------------------------------------------------------------------
- * Home.css - Estilos Completos e Otimizados (Versão Final e Compacta)
+ * Home.css - ESTILOS FINAIS E REFORÇADOS (INCLUINDO RESET BÁSICO)
  * --------------------------------------------------------------------------
  */
+
+/* ========================================================================= */
+/* --- 1. CSS RESET BÁSICO (Para garantir que espaçamentos padrão sumam) --- */
+/* ========================================================================= */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
 
 /* Variáveis de Color */
 :root {
@@ -208,10 +217,12 @@ button:hover {
 /* ESTILOS DE NAVEGAÇÃO (Desktop-First) */
 /* -------------------------------------------------------------------------- */
 
-/* Garante que o header ocupe 100% da largura em desktop também */
 header {
+    /* REFORÇO: Fixa o header em todas as resoluções e garante que ele cubra tudo */
     width: 100%;
     left: 0;
+    position: fixed; /* Mude para 'sticky' se preferir que ele desça com o scroll */
+    z-index: 1000;
     box-sizing: border-box; 
 }
 
@@ -237,7 +248,7 @@ header {
 
 /* AJUSTE GERAL DO ESPAÇAMENTO ENTRE SEÇÕES (DESKTOP) */
 section {
-    padding: 4rem 0; /* REDUZIDO para espaçamento mais apertado */
+    padding: 4rem 0; /* REDUZIDO */
 }
 .sectionTitle, .sectionTitleAlt {
     margin-bottom: 1.5rem !important; 
@@ -252,11 +263,7 @@ section {
     header {
         padding: 0.8rem 1rem !important;
         min-height: 60px;
-        position: fixed !important; 
-        /* CORREÇÃO PARA COBRIR 100% DA TELA E EVITAR O FUNDO BRANCO NAS LATERAIS */
-        width: 100%; 
-        left: 0;     
-        box-sizing: border-box; 
+        /* As propriedades position, width, left e z-index já estão no estilo geral acima */
     }
 
     /* AJUSTE ESSENCIAL PARA O HERO */
@@ -381,4 +388,11 @@ section {
         height: 40px;
         font-size: 1.5rem;
     }
+}
+#materiais1{
+    color:#004c4c;
+  
+    font-size:2.5rem ;
+    font-weight: 700;
+    margin-bottom: 1rem;
 }
