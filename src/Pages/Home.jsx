@@ -23,9 +23,9 @@ const Home = () => {
    
     const [currentSlide, setCurrentSlide] = useState(0); 
     const backgroundImages = [
-        '/assets/img/job.jpg', 
-        '/assets/img/african-american.jpg', 
+        '/assets/img/CONTRATOSIMPLES.jpg', 
         '/assets/img/closeup-businesspeople-handshake.jpg', 
+        '/assets/img/job.jpg', 
     ];
 
 
@@ -131,6 +131,7 @@ const Home = () => {
                             alt={`Foto ${index + 1}`}
                             style={styles.pinterestImage}
                             onClick={() => handleImageClick(src)}
+                            loading="lazy"
                         />
                     ))}
                 </div>
