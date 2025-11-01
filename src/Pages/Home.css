@@ -1,6 +1,6 @@
 /*
  * --------------------------------------------------------------------------
- * Home.css - Estilos Completos e Responsivos (Versão Aprimorada para Mobile)
+ * Home.css - Estilos Completos e Responsivos (Versão Final com Correção do Header)
  * --------------------------------------------------------------------------
  */
 
@@ -22,7 +22,7 @@
 
 /* Hover do Link no Desktop */
 .nav a:hover {
-    color: var(--subtle); /* Hover mais claro */
+    color: var(--subtle); 
     transition: color 0.3s ease;
 }
 
@@ -33,7 +33,7 @@
 
 .chatbotButton:hover,
 .pulse-animation:hover {
-    animation: none; /* Remove a animação no hover */
+    animation: none; 
     transform: scale(1.1);
     transition: transform 0.3s ease;
 }
@@ -46,28 +46,26 @@
 
 /* Hover do Botão Padrão */
 button:hover {
-    /* Escurece a cor primária no hover */
     background-color: #003333 !important; 
     transition: background-color 0.3s ease;
 }
 
 /* Hover do Botão Secundário (Ação) */
 .hero-action-button:hover {
-    background-color: #319a5e !important; /* Escurece o verde secundário */
+    background-color: #319a5e !important;
 }
 
 /* -------------------------------------------------------------------------- */
 /* MELHORIAS NO HERO (ESTÉTICA) */
 /* -------------------------------------------------------------------------- */
 .animated-hero {
-    /* Garante que a imagem preencha bem o fundo */
     background-size: cover !important;
     background-position: center !important;
     transition: background-image 1s ease-in-out; 
     display: flex;
 }
 
-/* Fortalece o overlay para melhor leitura em mobile */
+/* Fortalece o overlay para melhor leitura */
 .animated-hero > div[style*="rgba(0, 0, 0, 0.5)"] {
     background-color: rgba(0, 0, 0, 0.65) !important; 
     transition: background-color 0.5s;
@@ -103,7 +101,7 @@ button:hover {
 }
 .service-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.12); /* Sombra mais destacada */
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.12);
 }
 
 
@@ -117,7 +115,7 @@ button:hover {
     max-width: 1200px;
     margin: 0 auto;
     overflow: hidden;
-    border-radius: 16px; /* Ajuste para mais moderno */
+    border-radius: 16px;
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
     height: var(--carousel-height);
 }
@@ -139,13 +137,13 @@ button:hover {
 .carousel-image {
     width: 100%;
     height: 100%;
-    object-fit: cover; /* Garante que a imagem se ajuste bem sem distorção */
-    filter: brightness(0.85); /* Clareia um pouco a imagem padrão */
+    object-fit: cover;
+    filter: brightness(0.85);
     transition: filter 0.3s ease;
 }
 
 .carousel-item:hover .carousel-image {
-    filter: brightness(1); /* Tira o filtro no hover */
+    filter: brightness(1);
 }
 
 .carousel-caption {
@@ -236,15 +234,16 @@ button:hover {
     header {
         padding: 0.8rem 1rem !important;
         min-height: 60px;
-        position: fixed !important; /* Fixa o header no topo */
+        position: fixed !important; /* MANTÉM FIXO */
     }
 
-    /* AJUSTE PARA O PROBLEMA DE "MUITO ESPAÇO EM CIMA" */
+    /* AJUSTE ESSENCIAL PARA O HEADER CORTADO */
     .animated-hero {
         min-height: 80vh !important; 
-        padding: 5rem 1rem 2rem 1rem !important; /* Adiciona padding-top para não ser escondido pelo header fixo */
+        /* AUMENTADO: Garante que o conteúdo comece abaixo do header fixo */
+        padding: 8rem 1rem 2rem 1rem !important; 
         align-items: center;
-        justify-content: flex-end; /* Alinha o conteúdo mais para baixo */
+        justify-content: flex-end; 
         text-align: left;
     }
     
@@ -264,7 +263,7 @@ button:hover {
     }
 
     .hero-action-button {
-        align-self: flex-start; /* Alinha o botão à esquerda */
+        align-self: flex-start;
     }
 
 
@@ -277,7 +276,7 @@ button:hover {
         font-size: 2rem !important;
     }
 
-    /* Navegação Mobile */
+    /* Navegação Mobile (Menu Lateral) */
     .menu-toggle {
         display: flex;
         align-items: center;
