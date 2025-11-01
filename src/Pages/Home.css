@@ -27,15 +27,23 @@
     transition: color 0.3s ease;
 }
 
-/* Animação do Botão Chatbot */
-.chatbotButton:hover {
-    animation: pulse 1s infinite;
+/* Animação do Botão Chatbot (Pisca-Pisca) */
+.chatbotButton,
+.pulse-animation {
+    animation: pulse 1.5s infinite; /* Aumentei o tempo para um 'pisca-pisca' mais suave */
+}
+
+.chatbotButton:hover,
+.pulse-animation:hover {
+    animation: none; /* Remove a animação no hover para não ser excessivo, mantendo o efeito apenas parado */
+    transform: scale(1.1);
+    transition: transform 0.3s ease;
 }
 
 @keyframes pulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.15); }
-    100% { transform: scale(1); }
+    0% { transform: scale(1); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); }
+    50% { transform: scale(1.1); box-shadow: 0 0 20px rgba(60, 179, 113, 0.8), 0 0 40px rgba(60, 179, 113, 0.4); } /* Efeito de brilho */
+    100% { transform: scale(1); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); }
 }
 
 /* Hover do Botão Padrão */
