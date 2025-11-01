@@ -1,4 +1,7 @@
-
+/*
+ * --------------------------------------------------------------------------
+ * Home.css - Estilos Completos e Responsivos
+ * --------------------------------------------------------------------------
  */
 
 /* Variáveis de Cor (ajustadas a partir do seu JS) */
@@ -10,10 +13,12 @@
     --text: #2d3748;
 }
 
+/* -------------------------------------------------------------------------- */
 /* Estilos de Interação (Hover) */
+/* -------------------------------------------------------------------------- */
 
 .nav a:hover {
-    color: var(--tertiary); /* Link hover no desktop (branco -> cinza claro) */
+    color: var(--tertiary); /* Link hover no desktop */
     transition: color 0.3s ease;
 }
 
@@ -45,7 +50,9 @@ button:hover {
     transition: background-color 0.3s ease;
 }
 
+/* -------------------------------------------------------------------------- */
 /* Animações de Entrada (Hero Section) */
+/* -------------------------------------------------------------------------- */
 
 .animated-hero {
     /* Transição suave de fundo ao trocar as imagens */
@@ -54,13 +61,11 @@ button:hover {
     display: flex; 
 }
 
-
 .animated-item {
     opacity: 0;
     transform: translateY(20px); 
     animation: fade-down 0.8s forwards;
 }
-
 
 @keyframes fade-down {
     to {
@@ -68,7 +73,6 @@ button:hover {
         transform: translateY(0); 
     }
 }
-
 
 .animated-item.delay-1 {
     animation-delay: 0.3s; 
@@ -82,7 +86,9 @@ button:hover {
     animation-delay: 0.9s; 
 }
 
-/* Estilos para o Menu Hambúrguer (Desktop-First) */
+/* -------------------------------------------------------------------------- */
+/* Estilos de Navegação (Desktop-First) */
+/* -------------------------------------------------------------------------- */
 
 /* Oculta o botão de alternância do menu por padrão (em desktop) */
 .menu-toggle {
@@ -110,40 +116,62 @@ button:hover {
 /* -------------------------------------------------------------------------- */
 @media (max-width: 900px) {
 
-    /* HEADER */
-    .menu-toggle {
-        display: block; /* Exibe o botão de alternância do menu */
+    /* HEADER: Ajuste de altura e padding */
+    header {
+        padding: 1rem 1rem !important; /* Mais compacto no mobile */
+        min-height: 60px; /* Altura mínima para referência do menu */
     }
 
-    /* MENU LATERAL (Slide-in) */
+    /* Estilo e Animação do Botão Hambúrguer (para centralizar o ícone) */
+    .menu-toggle {
+        display: flex; /* Exibe e usa flex para centralizar */
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem; /* Ícone menor */
+        height: 40px; 
+        width: 40px;
+        z-index: 1001;
+    }
+
+    /* MENU LATERAL (Slide-in e Fundo Opaco) */
     .nav {
-        /* Esconde a navegação padrão (desktop) e transforma em slide lateral */
-        position: fixed; /* Troca para fixed para cobrir toda a tela */
-        top: 60px; /* Abaixo do header */
+        /* Configuração de Posição Fixa e Altura CORRETA */
+        position: fixed; 
+        top: 60px; /* Posiciona logo abaixo do header */
         left: 0;
         width: 100%;
-        height: 100vh;
+        
+        /* CORREÇÃO PARA FUNDO OPACO: 100% da viewport - 60px do header */
+        height: calc(100vh - 60px); 
+        
         flex-direction: column;
         align-items: center;
-        background-color: var(--primary);
+        
+        background-color: var(--primary); /* Fundo Opaco */
+        
         padding: 2rem 0;
         box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-        transform: translateX(-100%); /* Começa fora da tela (esquerda) */
-        transition: transform 0.4s ease-out; /* Transição de slide */
+        
+        /* Animação */
+        transform: translateX(-100%); 
+        transition: transform 0.4s ease-out;
+        
         z-index: 999;
+        
+        overflow-y: auto; /* Permite rolagem se houver muitos links */
     }
 
     /* Efeito de abertura do menu */
     .nav.open {
-        transform: translateX(0); /* Entra na tela */
+        transform: translateX(0); 
     }
 
-    /* Estilo e Animação dos Links no Menu Mobile */
+    /* Estilo e Animação dos Links no Menu Mobile (Cascata) */
     .nav a {
         padding: 1rem 0;
         width: 90%;
         text-align: center;
-        /* Linhas divisórias (border-bottom) REMOVIDAS conforme solicitado */
+        /* Linhas divisórias (border-bottom) REMOVIDAS */
         font-size: 1.25rem;
         color: #fff;
         text-decoration: none;
@@ -164,7 +192,7 @@ button:hover {
     .nav.open a:nth-child(2) { transition-delay: 0.2s; }
     .nav.open a:nth-child(3) { transition-delay: 0.3s; }
 
-    /* Estilo e Animação do Botão de Cadastro no Menu Mobile */
+    /* Estilo e Animação do Botão de Cadastro no Menu Mobile (Cascata) */
     .register-button-nav {
         width: 90%;
         margin-top: 1rem;
