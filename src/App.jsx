@@ -2,9 +2,9 @@ import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Home from './Pages/Home';
 import AgendarAtendimento from './Pages/AgendarAtendimento';
-import Materiais from 'src/Pages/Materiais';
-import Cadastro from 'src/Pages/Cadastro';
-import Advogado from 'src/Pages/Advogado';
+import Materiais from './Pages/Materiais';
+import Cadastro from '../Pages/Cadastro';
+import Advogado from './Pages/Advogado';
 
 function App() {
   return (
@@ -13,12 +13,12 @@ function App() {
         {/* Rotas principais */}
         <Route path="/" element={<Home />} />
 
-        <Route path="/agendaratendimento" element={<AgendarAtendimento />} />
+        <Route path="/Agendaratendimento" element={<AgendarAtendimento />} />
         <Route path="/materiais" element={<Materiais />} />
-        <Route path="/cadastro" element={<Cadastro />} />
+        <Route path="/Cadastro" element={<Cadastro />} />
 
         {/* Rota para o layout do Advogado */}
-        <Route path="/advogado/*" element={<Advogado />} />
+        <Route path="/Advogado/*" element={<Advogado />} />
       </Routes>
     </Router>
   );
