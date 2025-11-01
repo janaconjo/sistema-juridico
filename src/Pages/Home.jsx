@@ -157,7 +157,7 @@ const Home = () => {
                     style={styles.heroTitle}
                     className="animated-item delay-1"
                 >
-                    Justiça ao Seu Alcance: IPAJ - Patrocínio Jurídico Simplificado
+                    Justiça ao Seu Alcance
                 </h1> {/* TÍTULO ATUALIZADO */}
                 <p
                     style={styles.heroDescription}
@@ -181,7 +181,9 @@ const Home = () => {
 
             {/* 2. SEÇÃO SERVIÇOS */}
             <section id="Serviços" style={styles.section}> {/* ID e SEÇÃO PADRÃO */}
-                <h2 style={styles.sectionTitle}>Nossos **Serviços** e Ferramentas Essenciais</h2> {/* TÍTULO ATUALIZADO */}
+                <h2 style={styles.sectionTitle}>
+                    Nossos <strong>Serviços</strong> e Ferramentas Essenciais
+                </h2> {/* CORRIGIDO */}
                 <p style={styles.sectionSubtitle}>
                     Utilize nossa plataforma moderna para desburocratizar o acesso à justiça.
                 </p>
@@ -208,7 +210,9 @@ const Home = () => {
 
             {/* 3. SEÇÃO SOBRE/IMPACTO */}
             <section id="sobre" style={styles.sectionAlt}> {/* ID e SEÇÃO ALTERNATIVA */}
-                <h2 style={styles.sectionTitleAlt}>**Sobre** Nós: Nosso Impacto e Trajetória</h2> {/* TÍTULO ATUALIZADO */}
+                <h2 style={styles.sectionTitleAlt}>
+                    <strong>Sobre</strong> Nós: Nosso Impacto e Trajetória
+                </h2> {/* CORRIGIDO */}
                 <p style={styles.sectionSubtitleAlt}>
                     Comprometimento com a comunidade e com a excelência no patrocínio jurídico.
                 </p>
@@ -252,7 +256,9 @@ const Home = () => {
             <section id="materiais" style={styles.section}> {/* ID e SEÇÃO PADRÃO */}
                 <div style={styles.contentBlock}>
                     <div style={{ flex: 1, minWidth: '300px' }}>
-                        <h2 style={{ color: colorPalette.text, fontSize: '2.5rem' }}>**Materiais** Educativos e de Apoio</h2> {/* TÍTULO ATUALIZADO */}
+                        <h2 style={{ color: colorPalette.text, fontSize: '2.5rem' }}>
+                            <strong>Materiais</strong> Educativos e de Apoio
+                        </h2> {/* CORRIGIDO */}
                         <p style={{ color: colorPalette.text, marginBottom: '2rem' }}>
                             Acesse guias, vídeos e artigos simples sobre direito do trabalho, família, heranças e contratos. Nossa biblioteca é constantemente atualizada para mantê-lo informado.
                         </p>
@@ -274,7 +280,7 @@ const Home = () => {
                 }}
                 onClick={() => setIsChatOpen(!isChatOpen)}
                 title="Falar com o Assistente Jurídico"
-                className="chatbotButton pulse-animation" {/* CLASSE ADICIONADA PARA O CSS */}
+                className="chatbotButton pulse-animation" 
             >
                 💬
             </button>
@@ -282,7 +288,7 @@ const Home = () => {
             <Chatbot isOpen={isChatOpen} setIsOpen={setIsChatOpen} />
 
             <footer style={styles.footer}>
-                <p>© 2025  IPAJ - Instituto de Patrocínio e Assistência Jurídica | Desenvolvido por Jana Conjo</p>
+                <p>© 2025 IPAJ - Instituto de Patrocínio e Assistência Jurídica | Desenvolvido por Jana Conjo</p>
             </footer>
         </div>
     );
