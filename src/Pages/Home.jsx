@@ -23,9 +23,9 @@ const Home = () => {
    
     const [currentSlide, setCurrentSlide] = useState(0); 
     const backgroundImages = [
-        'src/assets/img/african-american.jpg', 
-        'src/assets/img/closeup-businesspeople-handshake.jpg', 
-        'src/assets/img/job.jpg', 
+        '/assets/img/job.jpg', 
+        '/assets/img/african-american.jpg', 
+        '/assets/img/closeup-businesspeople-handshake.jpg', 
     ];
 
 
