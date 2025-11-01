@@ -18,9 +18,9 @@ import {
     Link,        // Ícone para link externo
 } from 'lucide-react';
 // IMPORTAÇÕES DO FIREBASE
-import { auth, db } from '../firebase/firebase.js';
+import { auth, db } from '../Firebase/Firebase.js';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
-import { doc, getDoc, updateDoc } from 'firebase/firestore'; 
+import { doc, getDoc, updateDoc } from 'Firebase/firestore'; 
 
 // DADOS DE EXEMPLO ATUALIZADOS
 const processes = [
@@ -813,7 +813,6 @@ const styles = {
         marginBottom: '15px',
         gap: '20px',
         flexDirection: 'column', 
-        alignItems: 'center', 
         borderBottom: `1px solid ${colorPalette.tertiary}`,
         paddingBottom: '15px',
     },
