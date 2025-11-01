@@ -310,8 +310,8 @@ header {
         width: 80%;
         max-width: var(--menuWidth);
         height: 100vh;
-        background-color: var(--cardBackground);
-        border-radius: 0;
+        background-color:rgba(255, 255, 255, 0.858);
+        border-radius: 30px 0px 0px 30px ;
         box-shadow: -4px 0 20px rgba(0, 0, 0, 0.2);
         transform: translateX(100%);
         transition: transform 0.4s ease-in-out;
