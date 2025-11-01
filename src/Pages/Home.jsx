@@ -1,17 +1,17 @@
-import React, { useState, useEffect } from 'react'; 
+import React, { useState, useEffect } from 'react';
 import Chatbot from './Chatbot';
 import { useNavigate } from 'react-router-dom';
-import { auth } from '../Firebase/Firebase.js'; 
+import { auth } from '../Firebase/Firebase.js';
 import './Home.css';
 
 
 const colorPalette = {
-    primary: '#008080',       
-    secondary: '#3cb371',     
-    tertiary: '#e0f7f4',      
-    background: '#f4fbf9',    
+    primary: '#008080',
+    secondary: '#3cb371',
+    tertiary: '#e0f7f4',
+    background: '#f4fbf9',
     cardBackground: '#ffffff',
-    text: '#2d3748',          
+    text: '#2d3748',
 };
 
 const Home = () => {
@@ -19,26 +19,29 @@ const Home = () => {
     const [isChatOpen, setIsChatOpen] = useState(false);
     const [selectedImage, setSelectedImage] = useState(null);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
-    
-   
-    const [currentSlide, setCurrentSlide] = useState(0); 
+
+    // NOVO ESTADO PARA O MENU HAMBÚRGUER
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+
+    const [currentSlide, setCurrentSlide] = useState(0);
     const backgroundImages = [
-        '/assets/img/CONTRATOSIMPLES.jpg', 
-        '/assets/img/closeup-businesspeople-handshake.jpg', 
-        '/assets/img/job.jpg', 
+        '/assets/img/CONTRATOSIMPLES.jpg',
+        '/assets/img/closeup-businesspeople-handshake.jpg',
+        '/public/assets/img/job.jpg',
     ];
 
 
     useEffect(() => {
         const interval = setInterval(() => {
-            setCurrentSlide((prevSlide) => 
+            setCurrentSlide((prevSlide) =>
                 (prevSlide + 1) % backgroundImages.length
             );
-        }, 5000); 
-        
+        }, 5000);
+
         return () => clearInterval(interval);
     }, [backgroundImages.length]);
-    
+
 
     const galleryImages = [
         'src/assets/img/idosos.jpg',
@@ -58,7 +61,16 @@ const Home = () => {
     const closeModal = () => {
         setSelectedImage(null);
     };
-    
+
+    // Função para fechar o menu ao clicar em um link
+    const handleLinkClick = (hash) => {
+        setIsMenuOpen(false); // Fecha o menu ao clicar em um link
+        // Navega para a seção
+        // O `Maps` do `react-router-dom` é tipicamente usado para rotas diferentes.
+        // Para navegação dentro da mesma página (hash links), você pode usar window.location.hash
+        window.location.hash = hash;
+    };
+
 
     return (
         <div style={styles.baseContainer}>
@@ -67,53 +79,65 @@ const Home = () => {
                     <img src="src/assets/img/logo.webp" alt="IPAJ" style={styles.logo} />
                     <h2 style={styles.title}>IPAJ</h2>
                 </div>
-                <nav style={styles.nav}>
-                    <a href="#sobre" style={styles.link}>Sobre</a>
-                    <a href="#Serviços" style={styles.link}>Serviços</a>
-                    <a href="#materiais" style={styles.link}>Materiais</a>
-                    
-                    <button 
+
+                {/* BOTÃO HAMBÚRGUER (SÓ APARECE EM TELAS PEQUENAS) */}
+                <button
+                    className="menu-toggle"
+                    onClick={() => setIsMenuOpen(!isMenuOpen)}
+                >
+                    {isMenuOpen ? '✕' : '☰'}
+                </button>
+
+                {/* NAV DESKTOP E MOBILE (usa className 'nav' para o CSS) */}
+                <nav className={`nav ${isMenuOpen ? 'open' : ''}`}>
+                    <a href="#sobre" style={styles.link} onClick={() => handleLinkClick('sobre')}>Sobre</a>
+                    <a href="#Serviços" style={styles.link} onClick={() => handleLinkClick('Serviços')}>Serviços</a>
+                    <a href="#materiais" style={styles.link} onClick={() => handleLinkClick('materiais')}>Materiais</a>
+
+                    <button
                         onClick={() => navigate('/Cadastro')}
                         style={styles.registerButton}
+                        // Adicionado className para aplicar estilos de mobile se necessário
+                        className="register-button-nav"
                     >
                         Cadastre-se
                     </button>
                 </nav>
             </header>
 
-          
-            <section 
+
+            <section
                 style={{
                     ...styles.heroWithBackground,
                     backgroundImage: `url(${backgroundImages[currentSlide]})`,
-                }} 
-                className="animated-hero" 
+                }}
+                className="animated-hero"
             >
-     
-                <div style={styles.overlay}></div> 
 
-                <h1 
-                    style={styles.heroTitle} 
+                <div style={styles.overlay}></div>
+
+                <h1
+                    style={styles.heroTitle}
                     className="animated-item delay-1"
                 >
                     Instituto de Patrocínio e Assistência Jurídica
                 </h1>
-                <p 
+                <p
                     style={styles.heroDescription}
-                    className="animated-item delay-2" 
+                    className="animated-item delay-2"
                 >
                     Uma plataforma moderna e acessível desenvolvida para facilitar o acesso à justiça,
                     promover a transparência e apoiar os cidadãos com informações jurídicas.
                 </p>
-                <button 
-                    style={{ 
-                        ...styles.button, 
-                        backgroundColor: colorPalette.secondary, 
-                        zIndex: 10, 
-                    }} 
-                    className="animated-item delay-3" 
+                <button
+                    style={{
+                        ...styles.button,
+                        backgroundColor: colorPalette.secondary,
+                        zIndex: 10,
+                    }}
+                    className="animated-item delay-3"
                     onClick={() => navigate('/Cadastro')}
-                > 
+                >
                     Agendar atendimento
                 </button>
             </section>
@@ -197,7 +221,7 @@ const Home = () => {
             <Chatbot isOpen={isChatOpen} setIsOpen={setIsChatOpen} />
 
             <footer style={styles.footer}>
-                <p>© 2025  IPAJ | Desenvolvido por Jana Conjo</p>
+                <p>© 2025  IPAJ | Desenvolvido por Jana Conjo</p>
             </footer>
         </div>
     );
@@ -207,12 +231,13 @@ export default Home;
 
 
 const styles = {
+    // ... (Seu objeto styles existente, com a adição do menu hambúrguer no final)
     baseContainer: {
         fontFamily: "Roboto, 'Segoe UI', Arial, sans-serif",
         backgroundColor: colorPalette.background,
     },
     header: {
-        backgroundColor: colorPalette.primary, 
+        backgroundColor: colorPalette.primary,
         padding: '1rem 2rem',
         display: 'flex',
         justifyContent: 'space-between',
@@ -229,21 +254,17 @@ const styles = {
     logo: {
         width: '40px',
         height: '40px',
-        marginRight: '1rem', 
+        marginRight: '1rem',
         borderRadius: '50%',
     },
     title: {
         color: '#fff',
-        fontSize: '1.5rem', 
+        fontSize: '1.5rem',
         margin: 0,
-        fontWeight: 'bold', 
+        fontWeight: 'bold',
     },
-    nav: {
-        display: 'flex',
-        gap: '2rem',
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
+    // Removida a propriedade `nav` daqui para usar a classe CSS para a responsividade
+    // A navegação padrão está agora controlada principalmente pelo CSS
     link: {
         color: '#fff',
         textDecoration: 'none',
@@ -251,11 +272,11 @@ const styles = {
         transition: 'color 0.3s ease',
     },
     linkHover: {
-        color: colorPalette.tertiary, 
+        color: colorPalette.tertiary,
     },
     registerButton: {
         padding: '0.5rem 1.25rem',
-        backgroundColor: colorPalette.secondary, 
+        backgroundColor: colorPalette.secondary,
         color: '#fff',
         border: 'none',
         borderRadius: '8px',
@@ -263,48 +284,48 @@ const styles = {
         fontWeight: 'bold',
         transition: 'background-color 0.3s ease',
     },
-    
+
     // seccao hero
-    heroWithBackground: { 
-        minHeight: '100vh', 
+    heroWithBackground: {
+        minHeight: '100vh',
         textAlign: 'center',
-        
+
         display: 'flex',
         flexDirection: 'column',
-        justifyContent: 'center', 
-        alignItems: 'center',     
-        padding: '0 2rem', 
-        gap: '20px', 
-        
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: '0 2rem',
+        gap: '20px',
+
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         position: 'relative',
-        zIndex: 1, 
+        zIndex: 1,
     },
-    
+
 
     heroTitle: {
-        fontSize: '3.5rem', 
+        fontSize: '3.5rem',
         fontWeight: '700',
-        maxWidth: '900px', 
+        maxWidth: '900px',
         lineHeight: '1.2',
         marginBottom: '0.5rem',
-        color: '#fff', 
-        textShadow: '2px 2px 4px rgba(0,0,0,0.8)', 
+        color: '#fff',
+        textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
         zIndex: 10,
     },
 
     heroDescription: {
-        fontSize: '1.25rem', 
-        maxWidth: '750px', 
+        fontSize: '1.25rem',
+        maxWidth: '750px',
         margin: '0 auto 1.5rem auto',
         lineHeight: '1.6',
         fontWeight: '300',
-        color: '#fff', 
+        color: '#fff',
         textShadow: '1px 1px 3px rgba(0,0,0,0.8)',
         zIndex: 10,
     },
-    
+
 
     overlay: {
         position: 'absolute',
@@ -312,22 +333,22 @@ const styles = {
         left: 0,
         right: 0,
         bottom: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0.4)', 
-        zIndex: 5, 
+        backgroundColor: 'rgba(0, 0, 0, 0.4)',
+        zIndex: 5,
     },
-    
+
     section: {
-        padding: '4rem 2rem', 
+        padding: '4rem 2rem',
         backgroundColor: colorPalette.cardBackground,
         boxShadow: '0 2px 10px rgba(0, 0, 0, 0.05)',
     },
     sectionAlt: {
         padding: '4rem 2rem',
-        backgroundColor: colorPalette.tertiary, 
+        backgroundColor: colorPalette.tertiary,
     },
     button: {
         marginTop: '1.5rem',
-        padding: '0.75rem 2rem', 
+        padding: '0.75rem 2rem',
         backgroundColor: colorPalette.primary,
         color: '#fff',
         border: 'none',
@@ -339,7 +360,7 @@ const styles = {
     footer: {
         textAlign: 'center',
         padding: '2rem',
-        backgroundColor: colorPalette.primary, 
+        backgroundColor: colorPalette.primary,
         color: '#fff',
     },
     chatbotButton: {
@@ -358,7 +379,7 @@ const styles = {
         border: 'none',
         boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
         cursor: 'pointer',
-        zIndex: 10000, 
+        zIndex: 10000,
         transition: 'transform 0.2s ease-in-out',
     },
     contentBlock: {
@@ -370,9 +391,9 @@ const styles = {
     },
     image: {
         width: '100%',
-        maxWidth: '300px', 
+        maxWidth: '300px',
         borderRadius: '10px',
-        boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)', 
+        boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)',
     },
     grid: {
         display: 'grid',
@@ -383,9 +404,9 @@ const styles = {
     card: {
         backgroundColor: colorPalette.cardBackground,
         borderRadius: '10px',
-        padding: '1.5rem', 
-        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)', 
-        transition: 'transform 0.3s ease', 
+        padding: '1.5rem',
+        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)',
+        transition: 'transform 0.3s ease',
     },
     icon: {
         width: '50px',
@@ -413,16 +434,21 @@ const styles = {
         left: 0,
         right: 0,
         bottom: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0.85)', 
+        backgroundColor: 'rgba(0, 0, 0, 0.85)',
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
-        zIndex: 10000, 
+        zIndex: 10000,
     },
     modalImage: {
         maxWidth: '90%',
         maxHeight: '90%',
         borderRadius: '10px',
         boxShadow: '0 0 20px rgba(0, 0, 0, 0.5)',
+    },
+    // NOVO ESTILO PARA O BOTÃO HAMBÚRGUER (desktop-first: esconder por padrão)
+    // Este estilo será sobrescrito pela media query para aparecer no mobile.
+    menuToggle: {
+        display: 'none', // Esconde em desktop
     },
 };
