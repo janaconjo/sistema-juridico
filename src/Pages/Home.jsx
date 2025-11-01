@@ -1,358 +1,540 @@
 import React, { useState, useEffect } from 'react';
+import Chatbot from './Chatbot';
 import { useNavigate } from 'react-router-dom';
-import { auth, db } from '../Firebase/Firebase.js';
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
-import { doc, setDoc, getDoc } from 'firebase/firestore';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+ import { auth } from '../Firebase/Firebase.js'; 
+import './Home.css';
 
-const AuthForm = () => {
-    const [activeTab, setActiveTab] = useState('register');
-    const [userType, setUserType] = useState('comum');
 
-    const [nome, setNome] = useState('');
-    const [emailReg, setEmailReg] = useState('');
-    const [senhaReg, setSenhaReg] = useState('');
-    const [confSenha, setConfSenha] = useState('');
+const colorPalette = {
+    primary: '#004c4c',      // Verde-azulado Escuro (Profissional)
+    secondary: '#3cb371',    // Verde Suave (Ação)
+    background: '#f8f8f8', // Fundo bem claro
+    cardBackground: '#ffffff',
+    text: '#2d3748',         // Texto principal escuro
+    subtle: '#e0f0f0',       // Cor de fundo para seção alternativa
+};
 
-    const [emailLog, setEmailLog] = useState('');
-    const [senhaLog, setSenhaLog] = useState('');
+// Dados dos cards de serviço, adicionando ícones de texto limpos
+const serviceData = [
+    { 
+        icon: '💬', 
+        title: 'Chatbot Jurídico 24/7', 
+        description: 'Obtenha respostas imediatas para dúvidas jurídicas básicas com nossa IA especializada.' 
+    },
+    { 
+        icon: '📄', 
+        title: 'Análise de Documentos', 
+        description: 'Envie seus contratos ou documentos para uma análise rápida e segura por advogados qualificados.' 
+    },
+    { 
+        icon: '📚', 
+        title: 'Materiais Educativos', 
+        description: 'Acesse guias, vídeos e artigos simplificados para entender melhor seus direitos e deveres.' 
+    },
+    { 
+        icon: '📅', 
+        title: 'Agendamento Fácil', 
+        description: 'Precisa de ajuda? Agende uma consulta presencial ou online com nossos especialistas.' 
+    },
+];
 
-    const [error, setError] = useState('');
+// Funções para renderizar os ícones de serviço (simples e limpos)
+const renderServiceIcon = (icon) => (
+    <div style={styles.serviceIconContainer}>
+        <span style={styles.serviceIconText}>{icon}</span>
+    </div>
+);
 
+
+const Home = () => {
     const navigate = useNavigate();
+    const [isChatOpen, setIsChatOpen] = useState(false);
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-    // --- LÓGICA DE REGISTO ---
-    const handleRegister = async (e) => {
-        e.preventDefault();
 
-        if (!nome || !emailReg || !senhaReg || !confSenha) {
-            setError('Por favor, preencha todos os campos obrigatórios.');
-            return;
-        }
+    // Estados e Dados para o Carrossel do Hero
+    const [currentHeroSlide, setCurrentHeroSlide] = useState(0);
+    const heroBackgroundImages = [
+        '/assets/img/closeup-businesspeople-handshake.jpg',
+        '/assets/img/job.jpg',
+        '/assets/img/CONTRATOSIMPLES.jpg',
+    ];
 
-        if (senhaReg !== confSenha) {
-            setError('As palavras-passe inseridas não coincidem.');
-            return;
-        }
+    // Estados e Dados para a Galeria/Carrossel de Imagens
+    const [currentGallerySlide, setCurrentGallerySlide] = useState(0);
 
-        const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailReg);
-        if (!emailValid) {
-            setError('O e-mail inserido não é válido.');
-            return;
-        }
+    const galleryCarouselItems = [
+        {
+            src: '/assets/img/closeup-businesspeople-handshake.jpg',
+            title: 'Parceria de Sucesso',
+            fullDescription: 'Acordo histórico que beneficiou centenas de famílias em nossa comunidade.'
+        },
+        {
+            src: '/assets/img/job.jpg',
+            title: 'Inovação Tecnológica',
+            fullDescription: 'Implementação de novas tecnologias e métodos no suporte jurídico para melhor atendimento.'
+        },
+        {
+            src: '/assets/img/CONTRATOSIMPLES.jpg',
+            title: 'Expansão de Atendimento',
+            fullDescription: 'Abertura de novos escritórios e expansão para atender mais regiões e pessoas.'
+        },
+        {
+            src: '/assets/img/Educacao.jpg', 
+            title: 'Educação Jurídica',
+            fullDescription: 'Iniciativas educacionais para descomplicar o direito e tornar a justiça acessível a todos.'
+        },
+    ];
 
-        try {
-            const userCredential = await createUserWithEmailAndPassword(auth, emailReg, senhaReg);
-            const user = userCredential.user;
-
-            await setDoc(doc(db, "utilizadores", user.uid), {
-                nome,
-                email: emailReg,
-                tipo: userType,
-                criadoEm: new Date().toISOString()
-            });
-
-            toast.success('Registo efetuado com sucesso! Já pode iniciar sessão.');
-            setNome('');
-            setEmailReg('');
-            setSenhaReg('');
-            setConfSenha('');
-            setError('');
-            setActiveTab('login');
-        } catch (err) {
-            if (err.code === 'auth/email-already-in-use') {
-                setError('Este e-mail já está a ser utilizado.');
-            } else if (err.code === 'auth/weak-password') {
-                setError('A palavra-passe é demasiado fraca.');
-            } else {
-                setError('Erro ao registar: ' + err.message);
-            }
-        }
-    };
-
-    // --- LÓGICA DE LOGIN ---
-    const handleLogin = async (e) => {
-        e.preventDefault();
-        setError('');
-
-        if (!emailLog || !senhaLog) {
-            setError('Preencha o e-mail e a palavra-passe.');
-            return;
-        }
-
-        try {
-            const userCredential = await signInWithEmailAndPassword(auth, emailLog, senhaLog);
-            const user = userCredential.user;
-
-            const userRef = doc(db, "utilizadores", user.uid);
-            const docSnap = await getDoc(userRef);
-
-            if (docSnap.exists()) {
-                const userData = docSnap.data();
-                toast.success(`Bem-vindo, ${userData.nome}!`);
-
-                if (userData.tipo === 'advogado') {
-                    navigate('/advogado');
-                } else {
-                    navigate('/AgendarAtendimento');
-                }
-            } else {
-                setError('Utilizador não encontrado na base de dados.');
-            }
-
-            setEmailLog('');
-            setSenhaLog('');
-        } catch (err) {
-            if (err.code === 'auth/wrong-password' || err.code === 'auth/user-not-found') {
-                setError('E-mail ou palavra-passe incorretos.');
-            } else {
-                setError('Erro ao iniciar sessão: ' + err.message);
-            }
-        }
-    };
-
-    // --- ANIMAÇÃO DE ESTILO (Não relacionada à responsividade, mas necessária) ---
+    // Efeito para o Carrossel do Hero
     useEffect(() => {
-        const styleSheet = document.styleSheets[0];
-        styleSheet.insertRule(`
-            @keyframes fadeSlide {
-                from { opacity: 0; transform: translateY(20px); }
-                to { opacity: 1; transform: translateY(0); }
-            }
-        `, styleSheet.cssRules.length);
-    }, []);
-    
-    // --- ESTILOS RESPONSIVOS E DINÂMICOS ---
-    const isMobile = window.innerWidth <= 768;
+        const interval = setInterval(() => {
+            setCurrentHeroSlide((prevSlide) =>
+                (prevSlide + 1) % heroBackgroundImages.length
+            );
+        }, 5000); 
+        return () => clearInterval(interval);
+    }, [heroBackgroundImages.length]);
 
-    // Função que combina os estilos base com os estilos mobile se for necessário
-    const getStyle = (baseStyle, mobileStyle = {}) => {
-        return isMobile ? { ...baseStyle, ...mobileStyle } : baseStyle;
+    // Funções para navegar no Carrossel da Galeria
+    const nextGallerySlide = () => {
+        setCurrentGallerySlide((prev) => (prev + 1) % galleryCarouselItems.length);
+    };
+
+    const prevGallerySlide = () => {
+        setCurrentGallerySlide((prev) =>
+            (prev - 1 + galleryCarouselItems.length) % galleryCarouselItems.length
+        );
+    };
+
+    const handleLinkClick = (hash) => {
+        setIsMenuOpen(false); 
+        window.location.hash = hash;
     };
 
 
     return (
-        <div style={styles.wrapper}>
-            <ToastContainer />
-            <div style={getStyle(styles.container, styles.mediaQueries.container)}>
-                {/* Seção da Imagem (Escondida ou ajustada em mobile) */}
-                <div style={getStyle(styles.imageSection, styles.mediaQueries.imageSection)}>
-                    <h2 style={styles.title}>Bem-vindo(a)!</h2>
-                    <img src="src/assets/login.jpg" alt="Imagem" style={styles.image} />
-                    <div style={styles.welcomeText}>
-                        <p style={styles.subtitle}>A justiça é para todos.</p>
-                        <p style={styles.caption}>Crie a sua conta ou entre para continuar.</p>
-                    </div>
+        <div style={styles.baseContainer}>
+            <header style={styles.header}>
+                <div style={styles.logoArea}>
+                    <img src="/assets/img/OIP.webp" alt="IPAJ" style={styles.logo} />
+                    <h2 style={styles.title}>IPAJ</h2>
                 </div>
 
-                {/* Painel do Formulário */}
-                <div style={getStyle(styles.formPanel, styles.mediaQueries.formPanel)}>
-                    <div style={getStyle(styles.tabHeader, styles.mediaQueries.tabHeader)}>
-                        <button onClick={() => { setActiveTab('register'); setError(''); }} style={{ ...getStyle(styles.tabButton, styles.mediaQueries.tabButton), ...(activeTab === 'register' ? styles.activeTab : {}) }}>Registar</button>
-                        <button onClick={() => { setActiveTab('login'); setError(''); }} style={{ ...getStyle(styles.tabButton, styles.mediaQueries.tabButton), ...(activeTab === 'login' ? styles.activeTab : {}) }}>Iniciar Sessão</button>
-                    </div>
+                <button
+                    className="menu-toggle"
+                    onClick={() => setIsMenuOpen(!isMenuOpen)}
+                >
+                    {isMenuOpen ? '✕' : '☰'}
+                </button>
 
-                    {error && <p style={styles.error}>{error}</p>}
+                <nav className={`nav ${isMenuOpen ? 'open' : ''}`}>
+                    <a href="#Serviços" style={styles.link} onClick={() => handleLinkClick('Serviços')}>Serviços</a>
+                    <a href="#sobre" style={styles.link} onClick={() => handleLinkClick('sobre')}>Sobre Nós</a>
+                    <a href="#materiais" style={styles.link} onClick={() => handleLinkClick('materiais')}>Materiais</a>
 
-                    <div style={styles.sectionsContainer}>
-                        {/* FORM REGISTO */}
-                        <form onSubmit={handleRegister} style={{ ...styles.section, ...(activeTab === 'register' ? styles.visible : styles.hidden) }}>
-                            <h3 style={styles.sectionTitle}>Criar Conta</h3>
-                            <input placeholder="Nome" value={nome} onChange={(e) => setNome(e.target.value)} style={styles.input} />
-                            <input type="email" placeholder="E-mail" value={emailReg} onChange={(e) => setEmailReg(e.target.value)} style={styles.input} />
-                            <input type="password" placeholder="Palavra-passe" value={senhaReg} onChange={(e) => setSenhaReg(e.target.value)} style={styles.input} />
-                            <input type="password" placeholder="Confirmar palavra-passe" value={confSenha} onChange={(e) => setConfSenha(e.target.value)} style={styles.input} />
-                            <div style={styles.userTypeSelector}>
-                                <label>
-                                    <input type="radio" name="userType" value="comum" checked={userType === 'comum'} onChange={() => setUserType('comum')} />
-                                    Cidadão Comum
-                                </label>
-                                <label>
-                                    <input type="radio" name="userType" value="advogado" checked={userType === 'advogado'} onChange={() => setUserType('advogado')} />
-                                    Advogado
-                                </label>
+                    <button
+                        onClick={() => navigate('/Cadastro')}
+                        style={styles.registerButton}
+                        className="register-button-nav"
+                    >
+                        Cadastre-se
+                    </button>
+                </nav>
+            </header>
+
+
+            {/* 1. SEÇÃO HERO (MAIS CLEAN) */}
+            <section
+                style={{
+                    ...styles.heroWithBackground,
+                    backgroundImage: `url(${heroBackgroundImages[currentHeroSlide]})`,
+                }}
+                className="animated-hero"
+            >
+                <div style={styles.overlay}></div>
+                <h1
+                    style={styles.heroTitle}
+                    className="animated-item delay-1"
+                >
+                    Justiça ao Seu Alcance
+                </h1> {/* TÍTULO ATUALIZADO */}
+                <p
+                    style={styles.heroDescription}
+                    className="animated-item delay-2"
+                >
+                    Instituto de Patrocínio e Assistência Jurídica: Transparência, tecnologia e suporte para seus direitos.
+                </p>
+                <button
+                    style={{
+                        ...styles.button,
+                        backgroundColor: colorPalette.secondary,
+                        zIndex: 10,
+                        fontWeight: '700', // Destaque na fonte
+                    }}
+                    className="animated-item delay-3 hero-action-button"
+                    onClick={() => navigate('/Cadastro')}
+                >
+                    Agende sua Consulta
+                </button>
+            </section>
+
+            {/* 2. SEÇÃO SERVIÇOS */}
+            <section id="Serviços" style={styles.section}> {/* ID e SEÇÃO PADRÃO */}
+                <h2 style={styles.sectionTitle}>
+                    Nossos <strong>Serviços</strong> 
+                </h2> {/* CORRIGIDO */}
+                <p style={styles.sectionSubtitle}>
+                    Utilize nossa plataforma moderna para desburocratizar o acesso à justiça.
+                </p>
+                <div style={styles.grid}>
+                    {serviceData.map((item, index) => (
+                        <div key={index} className="service-card" style={styles.card}>
+                            {renderServiceIcon(item.icon)}
+                            <h3 style={styles.cardTitle}>{item.title}</h3>
+                            <p style={styles.cardDescription}>{item.description}</p>
+                            {/* Ação específica para o card de agendamento */}
+                            {item.title === 'Agendamento Fácil' && (
+                                <button
+                                    onClick={() => navigate('/Cadastro')}
+                                    style={{...styles.button, backgroundColor: colorPalette.primary, marginTop: '1rem', padding: '0.6rem 1.5rem'}}
+                                >
+                                    Fale Conosco
+                                </button>
+                            )}
+                        </div>
+                    ))}
+                </div>
+            </section>
+
+
+            {/* 3. SEÇÃO SOBRE/IMPACTO */}
+            <section id="sobre" style={styles.sectionAlt}> {/* ID e SEÇÃO ALTERNATIVA */}
+                <h2 style={styles.sectionTitle}>
+                    <strong>Sobre</strong> Nós
+                </h2> {/* CORRIGIDO */}
+                <p style={styles.sectionSubtitleAlt}>
+                    Comprometimento com a comunidade e com a excelência no patrocínio jurídico.
+                </p>
+
+    
+
+                <div className="carousel-container">
+                    <button onClick={prevGallerySlide} className="carousel-nav-button prev">←</button>
+                    <div className="carousel-wrapper" style={{ transform: `translateX(-${currentGallerySlide * 100}%)` }}>
+                        {galleryCarouselItems.map((item, index) => (
+                            <div key={index} className="carousel-item">
+                                <img src={item.src} alt={item.title} className="carousel-image" />
+                                <div className="carousel-caption">
+                                    <h4>{item.title}</h4>
+                                    {/* No design clean, a descrição completa pode ser removida ou simplificada */}
+                                    <p style={{fontSize: '1rem', opacity: 0.8}}>{item.fullDescription.split('.')[0]}</p> 
+                                </div>
                             </div>
-                            <button type="submit" style={styles.submitButton}>Registar</button>
-                        </form>
+                        ))}
+                    </div>
+                    <button onClick={nextGallerySlide} className="carousel-nav-button next">→</button>
+                </div>
 
-                        {/* FORM LOGIN */}
-                        <form onSubmit={handleLogin} style={{ ...styles.section, ...(activeTab === 'login' ? styles.visible : styles.hidden) }}>
-                            <h3 style={styles.sectionTitle}>Entrar</h3>
-                            <input type="email" placeholder="E-mail" value={emailLog} onChange={(e) => setEmailLog(e.target.value)} style={styles.input} />
-                            <input type="password" placeholder="Palavra-passe" value={senhaLog} onChange={(e) => setSenhaLog(e.target.value)} style={styles.input} />
-                            <button type="submit" style={styles.submitButton}>Entrar</button>
-                        </form>
+                {/* Indicadores de slide (pontinhos) */}
+                <div style={styles.carouselIndicators}>
+                    {galleryCarouselItems.map((_, idx) => (
+                        <span
+                            key={idx}
+                            style={{
+                                ...styles.indicatorDot,
+                                backgroundColor: idx === currentGallerySlide ? colorPalette.primary : '#ccc'
+                            }}
+                            onClick={() => setCurrentGallerySlide(idx)}
+                        ></span>
+                    ))}
+                </div>
+            </section>
+
+
+            {/* 4. SEÇÃO MATERIAIS */}
+            <section id="materiais" style={styles.section}> {/* ID e SEÇÃO PADRÃO */}
+                <div style={styles.contentBlock}>
+                    <div style={{ flex: 1, minWidth: '300px' }}>
+                        <h2 id="materiais1">
+                            <strong>Materiais</strong> Educativos 
+                        </h2> {/* CORRIGIDO */}
+                        <p style={{ color: colorPalette.text, marginBottom: '2rem' }}>
+                            Acesse guias, vídeos e artigos simples sobre direito do trabalho, família, heranças e contratos. Nossa biblioteca é constantemente atualizada para mantê-lo informado.
+                        </p>
+                        <button style={{...styles.button, backgroundColor: colorPalette.primary}} onClick={() => navigate('/Materiais')}>
+                            Ver Materiais Educativos
+                        </button>
+                    </div>
+                    <div style={{ flex: 1, minWidth: '300px', display: 'flex', justifyContent: 'flex-end' }}>
+                        <img src="/assets/img/OIP.webp" alt="Materiais Educativos" style={styles.image} />
                     </div>
                 </div>
-            </div>
+            </section>
+
+            {/* CHATBOT & FOOTER */}
+            <button
+                style={{
+                    ...styles.chatbotButton,
+                    backgroundColor: colorPalette.secondary,
+                }}
+                onClick={() => setIsChatOpen(!isChatOpen)}
+                title="Falar com o Assistente Jurídico"
+                className="chatbotButton pulse-animation" 
+            >
+                💬
+            </button>
+
+            <Chatbot isOpen={isChatOpen} setIsOpen={setIsChatOpen} />
+
+            <footer style={styles.footer}>
+                <p>© 2025 IPAJ - Instituto de Patrocínio e Assistência Jurídica | Desenvolvido por Jana Conjo</p>
+            </footer>
         </div>
     );
 };
 
-// --- ESTILOS BASE (DESKTOP) ---
+export default Home;
+
+
 const styles = {
-    wrapper: {
-        position: 'fixed',
+    baseContainer: {
+        fontFamily: "Roboto, 'Segoe UI', Arial, sans-serif",
+        backgroundColor: colorPalette.background,
+    },
+    header: {
+        backgroundColor: colorPalette.primary,
+        padding: '1rem 2rem',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        position: 'sticky',
+        top: 0,
+        zIndex: 1000,
+        boxShadow: '0 2px 10px rgba(0, 0, 0, 0.15)',
+    },
+    logoArea: {
+        display: 'flex',
+        alignItems: 'center',
+    },
+    logo: {
+        width: '40px',
+        height: '40px',
+        marginRight: '1rem',
+        borderRadius: '50%',
+        backgroundColor: '#fff', // Para dar destaque no logo
+        padding: '2px', 
+    },
+    title: {
+        color: '#fff',
+        fontSize: '1.5rem',
+        margin: 0,
+        fontWeight: 'bold',
+    },
+    link: {
+        color: '#fff',
+        textDecoration: 'none',
+        fontWeight: '500',
+        transition: 'color 0.3s ease',
+    },
+    registerButton: {
+        padding: '0.75rem 1.5rem', // Aumentado
+        backgroundColor: colorPalette.secondary,
+        color: '#fff',
+        border: 'none',
+        borderRadius: '8px',
+        cursor: 'pointer',
+        fontWeight: '600',
+        transition: 'background-color 0.3s ease',
+    },
+
+    // --- HERO SECTION ---
+    heroWithBackground: {
+        minHeight: '100vh',
+        textAlign: 'center',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: '0 2rem',
+        gap: '20px',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        position: 'relative',
+        zIndex: 1,
+    },
+    heroTitle: {
+        fontSize: '4rem', // Fonte maior e mais impactante
+        fontWeight: '800',
+        maxWidth: '900px',
+        lineHeight: '1.1',
+        marginBottom: '1rem',
+        color: '#fff',
+        textShadow: '2px 2px 6px rgba(0,0,0,0.9)',
+        zIndex: 10,
+    },
+    heroDescription: {
+        fontSize: '1.5rem', // Fonte maior para a descrição
+        maxWidth: '750px',
+        margin: '0 auto 2rem auto',
+        lineHeight: '1.5',
+        fontWeight: '400',
+        color: '#fff',
+        textShadow: '1px 1px 4px rgba(0,0,0,0.8)',
+        zIndex: 10,
+    },
+    overlay: {
+        position: 'absolute',
         top: 0,
         left: 0,
         right: 0,
         bottom: 0,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        background: 'linear-gradient(120deg, #61927dff, #ffffff)',
-        zIndex: 999,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)', // Overlay mais escuro para maior contraste
+        zIndex: 5,
     },
-    container: {
-        display: 'flex',
-        width: '800px',
-        height: '500px',
-        borderRadius: '12px',
-        overflow: 'hidden',
-        boxShadow: '0 15px 35px rgba(0,0,0,0.2)',
-        fontFamily: 'Segoe UI, sans-serif',
-        backgroundColor: '#fff',
+    // --- SECTIONS ---
+    section: {
+        padding: '6rem 2rem', // Maior espaçamento
+        backgroundColor: colorPalette.cardBackground,
+        boxShadow: '0 2px 10px rgba(0, 0, 0, 0.05)',
     },
-    imageSection: {
-        flex: 1,
-        backgroundColor: '#e0f7f4',
+    sectionAlt: {
+        padding: '6rem 2rem', // Maior espaçamento
+        backgroundColor: colorPalette.subtle,
+    },
+    sectionTitle: {
+        color: colorPalette.primary,
+        textAlign: 'center',
+        fontSize: '2.5rem',
+        fontWeight: '700',
+        marginBottom: '1rem',
+    },
+    sectionSubtitle: {
+        maxWidth: '800px',
+        margin: '0 auto 4rem auto',
+        textAlign: 'center',
+        color: colorPalette.text,
+        fontSize: '1.1rem',
+        lineHeight: '1.6',
+    },
+    sectionTitleAlt: {
+        color: colorPalette.text,
+        textAlign: 'center',
+        fontSize: '2.5rem',
+        fontWeight: '700',
+        marginBottom: '1rem',
+    },
+    sectionSubtitleAlt: {
+        maxWidth: '800px',
+        margin: '0 auto 4rem auto',
+        textAlign: 'center',
+        color: colorPalette.text,
+        fontSize: '1.1rem',
+        lineHeight: '1.6',
+    },
+    // --- SERVICE CARDS (CLEAN) ---
+    grid: {
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', // Cards um pouco maiores
+        gap: '2rem',
+        marginTop: '2rem',
+    },
+    card: {
+        backgroundColor: colorPalette.cardBackground,
+        borderRadius: '12px', // Cantos mais arredondados
+        padding: '2rem', // Mais padding
+        boxShadow: '0 8px 16px rgba(0, 0, 0, 0.08)',
+        transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+        textAlign: 'left',
+    },
+    serviceIconContainer: {
+        backgroundColor: colorPalette.secondary,
+        width: '56px',
+        height: '56px',
+        borderRadius: '50%',
         display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
         justifyContent: 'center',
-        padding: '20px',
+        alignItems: 'center',
+        marginBottom: '1rem',
+    },
+    serviceIconText: {
+        fontSize: '1.8rem',
+        color: '#fff',
+    },
+    cardTitle: {
+        color: colorPalette.primary,
+        fontSize: '1.4rem',
+        fontWeight: '600',
+        marginBottom: '0.5rem',
+    },
+    cardDescription: {
+        color: colorPalette.text,
+        fontSize: '1rem',
+    },
+    // --- DEMAIS ESTILOS ---
+    button: {
+        padding: '0.75rem 2rem',
+        backgroundColor: colorPalette.primary,
+        color: '#fff',
+        border: 'none',
+        borderRadius: '8px',
+        cursor: 'pointer',
+        transition: 'background-color 0.3s ease',
+        fontWeight: '600',
+    },
+    contentBlock: {
+        display: 'flex',
+        gap: '4rem', // Mais espaço
+        alignItems: 'center',
+        flexWrap: 'wrap',
+        justifyContent: 'space-between',
+        maxWidth: '1200px',
+        margin: '0 auto',
     },
     image: {
         width: '100%',
-        height: 'auto',
-        maxWidth: '250px',
-        objectFit: 'cover',
-        borderRadius: '8px',
+        maxWidth: '450px', // Imagem maior no bloco de Conteúdo
+        borderRadius: '12px',
+        boxShadow: '0 4px 15px rgba(0, 0, 0, 0.15)',
     },
-    welcomeText: {
+    footer: {
         textAlign: 'center',
-    },
-    title: {
-        fontSize: '2rem',
-        fontWeight: 'bold',
-    },
-    subtitle: {
-        fontSize: '1rem',
-        margin: '10px 0',
-    },
-    caption: {
+        padding: '2rem',
+        backgroundColor: colorPalette.primary,
+        color: '#fff',
         fontSize: '0.9rem',
-        color: '#666',
     },
-    formPanel: {
-        flex: 1.5,
-        padding: '30px',
-        backgroundColor: '#fff',
+    chatbotButton: {
+        position: 'fixed',
+        bottom: '24px',
+        right: '24px',
+        width: '60px',
+        height: '60px',
         display: 'flex',
-        flexDirection: 'column',
         justifyContent: 'center',
         alignItems: 'center',
-        borderLeft: '2px solid #ddd',
-    },
-    tabHeader: {
-        display: 'flex',
-        justifyContent: 'space-between',
-        width: '100%',
-    },
-    tabButton: {
-        flex: 1,
-        padding: '10px',
+        borderRadius: '50%',
+        backgroundColor: colorPalette.secondary,
+        color: '#fff',
+        fontSize: '26px',
         border: 'none',
-        backgroundColor: '#f0f0f0',
+        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
         cursor: 'pointer',
-        textAlign: 'center',
+        zIndex: 10000,
+        transition: 'transform 0.2s ease-in-out',
     },
-    activeTab: {
-        backgroundColor: '#008080',
-        color: 'white',
-    },
-    sectionsContainer: {
-        width: '100%',
-    },
-    section: {
-        display: 'none',
-        animation: 'fadeSlide 0.5s ease-out',
-    },
-    visible: {
-        display: 'block',
-    },
-    hidden: {
-        display: 'none',
-    },
-    sectionTitle: {
-        fontSize: '1.5rem',
-        marginBottom: '20px',
-        fontWeight: 'bold',
-    },
-    input: {
-        width: '100%',
-        padding: '10px',
-        margin: '10px 0',
-        borderRadius: '5px',
-        border: '1px solid #ddd',
-    },
-    submitButton: {
-        width: '100%',
-        padding: '12px',
-        backgroundColor: '#008080',
-        color: 'white',
-        border: 'none',
-        borderRadius: '5px',
-        cursor: 'pointer',
-        fontSize: '1rem',
-    },
-    userTypeSelector: {
+    carouselIndicators: { 
         display: 'flex',
-        justifyContent: 'space-around',
-        margin: '10px 0',
+        justifyContent: 'center',
+        marginTop: '1.5rem',
+        gap: '0.5rem',
     },
-    error: {
-        color: 'red',
-        marginBottom: '10px',
-        fontSize: '0.9rem',
-        textAlign: 'center',
+    indicatorDot: {
+        width: '10px',
+        height: '10px',
+        borderRadius: '50%',
+        backgroundColor: '#ccc',
+        cursor: 'pointer',
+        transition: 'background-color 0.3s ease',
     },
-    
-    // =========================================================================
-    // --- MEDIA QUERIES PARA RESPONSIVIDADE (Telas <= 768px) ---
-    // =========================================================================
-    mediaQueries: {
-        container: {
-            width: '95%',
-            height: 'auto', // Altura automática para conteúdo empilhado
-            flexDirection: 'column', // Empilha as colunas
-            margin: '20px 0', // Adiciona margem vertical para não colar nas bordas
-            overflowY: 'auto', // Permite scroll se o conteúdo for muito longo
-        },
-        imageSection: {
-            // Esconde a seção de imagem em telas muito pequenas para dar foco ao formulário
-            display: 'none', 
-            // Se preferir manter uma versão mais compacta, use:
-            /*
-            padding: '10px',
-            height: '150px',
-            overflow: 'hidden',
-            */
-        },
-        formPanel: {
-            width: '100%',
-            padding: '20px',
-            borderLeft: 'none',
-            borderTop: '2px solid #ddd',
-        },
-        tabHeader: {
-            marginBottom: '10px',
-        },
-        tabButton: {
-            fontSize: '0.9rem',
-        }
-    }
 };
-
-export default AuthForm;
