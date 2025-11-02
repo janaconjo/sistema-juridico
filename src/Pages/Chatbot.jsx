@@ -1,180 +1,257 @@
-import React, { useState } from 'react';
-import Tesseract from 'tesseract.js';
+import React, { useState, useEffect } from 'react';
+// Note: Tesseract.js deve ser importado como um worker para melhor performance
+import { createWorker } from 'tesseract.js';
 import axios from 'axios';
 
 const PRIMARY_COLOR = '#004D40'; 
 const BACKGROUND_LIGHT = '#F9F9F9'; 
 const BOT_MESSAGE_BG = '#EAEAEA'; 
 
+// --- Configuração responsiva ---
+const CHAT_STYLES = {
+  desktop: { width: '420px', maxHeight: '600px', height: '500px' },
+  mobile: { width: '100%', height: '100%', top: 0, right: 0, bottom: 0, left: 0, borderRadius: 0 }
+};
+
+// --- Otimiza a função de Tesseract para criar o worker apenas uma vez
+let ocrWorker = null;
+
 const Chatbot = ({ isOpen, setIsOpen }) => {
-  const [messages, setMessages] = useState([]); 
-  const [inputValue, setInputValue] = useState('');
-  const [uploadedImage, setUploadedImage] = useState(null); 
+  const [messages, setMessages] = useState([]); 
+  const [inputValue, setInputValue] = useState('');
+  const [isProcessing, setIsProcessing] = useState(false);
+  // ⬅️ NOVO ESTADO: Armazena o texto do documento para anexar à próxima pergunta do usuário
+  const [pendingDocumentText, setPendingDocumentText] = useState(''); 
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
 
-  const sendToBackend = async (userMessage) => {
-    try {
-      const response = await axios.post('http://localhost:5001/chat', {
-        message: userMessage
-      });
-      return response.data.reply;
-    } catch (err) {
-      console.error("Erro a contactar", err);
-      return "Desculpe, ocorreu um erro ao contactar o servidor.";
-    }
-  };
+  // Efeito para criar e terminar o worker do Tesseract
+  useEffect(() => {
+    const initializeWorker = async () => {
+      if (!ocrWorker) {
+        ocrWorker = await createWorker('por');
+        console.log("Tesseract Worker inicializado.");
+      }
+    };
+    initializeWorker();
 
+    // Limpar worker ao desmontar
+    return () => {
+      if (ocrWorker) {
+        ocrWorker.terminate();
+        ocrWorker = null;
+      }
+    };
+  }, []);
 
-  const performOcrAnalysis = async (file, ocrLanguage) => {
-    return new Promise((resolve, reject) => {
-      Tesseract.recognize(file, ocrLanguage, { logger: m => console.log(m) })
-        .then(({ data: { text } }) => {
-          const summary = text.substring(0, 200) + (text.length > 200 ? '...' : '');
-          resolve({ rawText: text, summary });
-        })
-        .catch(error => reject(error));
-    });
-  };
+  // Efeito para lidar com a responsividade
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
+  const isMobile = windowWidth <= 768;
+  const currentStyles = isMobile ? CHAT_STYLES.mobile : { ...CHAT_STYLES.desktop, bottom: '80px', right: '20px' };
 
-  const playSound = () => {
-    const audio = new Audio('https://www.myinstants.com/media/sounds/bell-ring.mp3');
-    audio.volume = 0.5; 
-    audio.play().catch(e => console.error("Erro ao tocar som:", e)); 
-  };
+  // ⬅️ ALTERAÇÃO CRÍTICA: Anexa o texto do documento à pergunta do usuário, se houver.
+  const sendToBackend = async (userQuestion) => {
+    let messageToSend = userQuestion;
 
-  const handleSendMessage = async (textToSend) => {
-    const messageText = textToSend || inputValue;
-    if (!messageText.trim()) return;
-
-    setMessages(prev => [...prev, { text: messageText, sender: 'user' }]);
-    setInputValue('');
-
-    const processingMessage = { text: 'A gerar resposta...', sender: 'bot', temp: true };
-    setMessages(prev => [...prev, processingMessage]);
-
-    const botReply = await sendToBackend(messageText);
-
-    setMessages(prev => {
-      const filtered = prev.filter(msg => !msg.temp);
-      return [...filtered, { text: botReply, sender: 'bot' }];
-    });
-
-    playSound();
-  };
-
-  // --- Upload de imagem 
-  const handleFileChange = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    const imageURL = URL.createObjectURL(file);
-    setUploadedImage(imageURL);
-
-    setMessages(prev => [
-      ...prev,
-      { image: imageURL, sender: 'user', text: 'Imagem enviada' },
-      { text: `...`, sender: 'bot' }
-    ]);
-
-    try {
-      const { rawText, summary } = await performOcrAnalysis(file, 'por');
-      setMessages(prev => [
-        ...prev,
-        { text: 'Texto extraído: ' + summary, sender: 'bot' }
-      ]);
-
-      const botReply = await sendToBackend(rawText);
-      setMessages(prev => [...prev, { text: botReply, sender: 'bot' }]);
-      playSound();
-    } catch (error) {
-      console.error(error);
-      setMessages(prev => [...prev, { text: 'Erro ao processar a imagem.', sender: 'bot' }]);
-    }
-  };
-  
- 
-  const handleClearChat = () => setMessages([]);
+    if (pendingDocumentText) {
+      // Combina o texto extraído com a pergunta do usuário para o Gemini
+      messageToSend = `DOCUMENTO PARA ANÁLISE: """${pendingDocumentText}""" PERGUNTA JURÍDICA: ${userQuestion}`;
+      setPendingDocumentText(''); // Limpa o texto pendente após o envio
+    }
+    
+    try {
+      const response = await axios.post('http://localhost:5001/chat', {
+        message: messageToSend
+      });
+      return response.data.reply;
+    } catch (err) {
+      console.error("Erro a contactar o backend:", err);
+      return "Desculpe, ocorreu um erro ao contactar o servidor.";
+    }
+  };
 
 
-  return (
-    <div style={{ display: isOpen ? 'flex' : 'none', flexDirection: 'column', position: 'fixed', bottom: '80px', right: '20px', width: '420px', maxHeight: '600px', height: '500px', borderRadius: '16px', boxShadow: '0 8px 30px rgba(0,0,0,0.15)', backgroundColor: BACKGROUND_LIGHT, fontFamily: 'Arial, sans-serif', zIndex: 1000 }}>
-      
-      {/* footer */}
-      <div style={{ padding: '0.75rem 1rem', backgroundColor: PRIMARY_COLOR, color: '#fff', borderRadius: '16px 16px 0 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h3 style={{ margin: 0, fontSize: '1.1rem' }}>Assistente Jurídico</h3>
-        <div>
-          <button onClick={handleClearChat} style={{ background: 'none', border: 'none', color: '#fff', fontSize: '1.2rem', marginLeft: '0.5rem', cursor: 'pointer' }}>🗑️</button>
-          <button onClick={() => setIsOpen(false)} style={{ background: 'none', border: 'none', color: '#fff', fontSize: '1.2rem', marginLeft: '0.5rem', cursor: 'pointer' }}>×</button>
-        </div>
-      </div>
+  const performOcrAnalysis = async (file) => {
+    if (!ocrWorker) throw new Error("Tesseract Worker não inicializado.");
+    
+    const { data: { text } } = await ocrWorker.recognize(file, 'por', { logger: m => console.log(m) });
+    const summary = text.substring(0, 200) + (text.length > 200 ? '...' : '');
+    return { rawText: text, summary };
+  };
 
-      {/* mensagens */}
-      <div style={{ flex: 1, padding: '1rem', overflowY: 'auto', backgroundColor: BACKGROUND_LIGHT }}>
-        {messages.length === 0 ? <p style={{ textAlign: 'center', color: '#888' }}>Olá! Diga-me o seu assunto ou envie um documento.</p> :
-          messages.map((msg, i) => (
-            <div key={i} style={{ textAlign: msg.sender === 'user' ? 'right' : 'left', margin: '0.5rem 0' }}>
-              {msg.image && <img src={msg.image} alt="Envio" style={{ maxWidth: '80%', borderRadius: '8px' }} />}
-              <div style={{ display: 'inline-block', padding: '0.75rem 1rem', borderRadius: '20px', maxWidth: '80%', marginTop: '0.5rem', 
-                backgroundColor: msg.sender === 'user' ? PRIMARY_COLOR : BOT_MESSAGE_BG, 
-                color: msg.sender === 'user' ? '#fff' : '#333', whiteSpace: 'pre-wrap', 
-                marginLeft: msg.sender === 'bot' ? 0 : 'auto', marginRight: msg.sender === 'user' ? 0 : 'auto' }}
-                dangerouslySetInnerHTML={{ __html: msg.text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') }}>
-              </div>
-            </div>
-          ))
-        }
-      </div>
 
-      <div style={{ padding: '0.5rem 1rem', borderTop: '1px solid #eee', display: 'flex', alignItems: 'center' }}>
-        
-        <input type="file" accept="image/*" id="fileInput" onChange={handleFileChange} style={{ display: 'none' }} />
-        <label htmlFor="fileInput" style={{ cursor: 'pointer', fontSize: '1.5rem', marginRight: '0.5rem' }}>📷</label>
+  // ❌ REMOÇÃO: Função playSound removida conforme solicitado.
 
-   
-        <div style={{ flex: 1, position: 'relative' }}>
-          <input 
-            type="text" 
-            value={inputValue} 
-            onChange={(e) => setInputValue(e.target.value)} 
-            onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()} 
-            placeholder="Pergunte ou envie documento..." 
-            style={{ 
-              width: '100%', 
-              padding: '0.75rem 1rem', 
-              paddingRight: '70px', 
-              borderRadius: '25px', 
-              fontSize: '1rem',
-              border: '1px solid #ccc',
-              boxSizing: 'border-box', 
-            }} 
-          />
-        
-          <button 
-            onClick={() => handleSendMessage()} 
-            style={{ 
-              position: 'absolute', 
-              right: '5px', 
-              top: '50%', 
-              transform: 'translateY(-50%)', 
-              padding: '0.5rem 0.75rem', 
-              color: '#fff', 
-              border: 'none', 
-              borderRadius: '25px', 
-              cursor: 'pointer', 
-              fontWeight: 'bold', 
-              backgroundColor: PRIMARY_COLOR,
-              fontSize: '0.9rem',
-          
-              zIndex: 2 
-            }}
-          >
-            Enviar
-          </button>
-        </div>
-        
-      </div>
-    </div>
-  );
+  const handleSendMessage = async (textToSend) => {
+    if (isProcessing) return; // Evita envios múltiplos
+    
+    const messageText = textToSend || inputValue;
+    if (!messageText.trim()) return;
+
+    setMessages(prev => [...prev, { text: messageText, sender: 'user' }]);
+    setInputValue('');
+    setIsProcessing(true);
+
+    // Mensagem de processamento
+    const processingMessage = { text: 'A gerar resposta...', sender: 'bot', temp: true };
+    setMessages(prev => [...prev, processingMessage]);
+
+    // ⬅️ CRÍTICO: Envia apenas a PERGUNTA do usuário. O texto do documento é anexado dentro de sendToBackend.
+    const botReply = await sendToBackend(messageText);
+
+    // Remove a mensagem temporária e adiciona a resposta final
+    setMessages(prev => {
+      const filtered = prev.filter(msg => !msg.temp);
+      return [...filtered, { text: botReply, sender: 'bot' }];
+    });
+    
+    setIsProcessing(false);
+  };
+
+  // --- Upload de imagem ---
+  const handleFileChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setIsProcessing(true);
+    
+    const imageURL = URL.createObjectURL(file);
+    
+    setMessages(prev => [
+      ...prev,
+      { image: imageURL, sender: 'user', text: 'Documento enviado para análise.' },
+      { text: `A processar documento, aguarde... ⏳`, sender: 'bot', temp: true }
+    ]);
+    
+    try {
+      const { rawText, summary } = await performOcrAnalysis(file);
+
+      // ⬅️ ALTERAÇÃO CRÍTICA: Define o texto bruto (rawText) como pendente
+      setPendingDocumentText(rawText);
+      
+      // Remove a mensagem temporária de processamento
+      setMessages(prev => prev.filter(msg => !msg.temp));
+
+      // Pede ao usuário que insira a pergunta
+      setMessages(prev => [
+        ...prev,
+        { text: `✅ Texto extraído com sucesso: ${summary} \n\n**O que gostaria de saber sobre este documento?** Por favor, digite a sua pergunta.`, sender: 'bot' }
+      ]);
+      
+      setIsProcessing(false); // Permite ao usuário digitar a próxima pergunta
+
+    } catch (error) {
+      console.error("Erro no Tesseract/OCR:", error);
+      setMessages(prev => prev.filter(msg => !msg.temp)); // Remove a mensagem temporária
+      setMessages(prev => [...prev, { text: '❌ Erro ao processar a imagem. Tente novamente.', sender: 'bot' }]);
+      setIsProcessing(false);
+    }
+  };
+  
+ 
+  const handleClearChat = () => {
+    setMessages([]);
+    setPendingDocumentText(''); // Limpa qualquer documento pendente
+  };
+
+
+  return (
+    <div style={{ 
+      ...currentStyles, // Aplica estilos de desktop ou mobile
+      display: isOpen ? 'flex' : 'none', 
+      flexDirection: 'column', 
+      position: 'fixed', 
+      borderRadius: isMobile ? 0 : '16px', 
+      boxShadow: isMobile ? 'none' : '0 8px 30px rgba(0,0,0,0.15)', 
+      backgroundColor: BACKGROUND_LIGHT, 
+      fontFamily: 'Arial, sans-serif', 
+      zIndex: 1000 
+    }}>
+      
+      {/* HEADER */}
+      <div style={{ padding: '0.75rem 1rem', backgroundColor: PRIMARY_COLOR, color: '#fff', borderRadius: isMobile ? '0' : '16px 16px 0 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <h3 style={{ margin: 0, fontSize: isMobile ? '1.2rem' : '1.1rem' }}>Assistente Jurídico IPAJ</h3>
+        <div>
+          <button onClick={handleClearChat} style={{ background: 'none', border: 'none', color: '#fff', fontSize: isMobile ? '1.5rem' : '1.2rem', marginLeft: '0.5rem', cursor: 'pointer' }}>🗑️</button>
+          <button onClick={() => setIsOpen(false)} style={{ background: 'none', border: 'none', color: '#fff', fontSize: isMobile ? '1.5rem' : '1.2rem', marginLeft: '0.5rem', cursor: 'pointer' }}>×</button>
+        </div>
+      </div>
+
+      {/* MENSAGENS */}
+      <div style={{ flex: 1, padding: '1rem', overflowY: 'auto', backgroundColor: BACKGROUND_LIGHT }}>
+        {messages.length === 0 ? <p style={{ textAlign: 'center', color: '#888' }}>Olá! Diga-me o seu assunto ou envie um documento.</p> :
+          messages.map((msg, i) => (
+            <div key={i} style={{ textAlign: msg.sender === 'user' ? 'right' : 'left', margin: '0.5rem 0' }}>
+              {msg.image && <img src={msg.image} alt="Envio" style={{ maxWidth: '80%', borderRadius: '8px', marginBottom: '0.5rem' }} />}
+              <div style={{ display: 'inline-block', padding: '0.75rem 1rem', borderRadius: '20px', maxWidth: '80%', 
+                backgroundColor: msg.sender === 'user' ? PRIMARY_COLOR : BOT_MESSAGE_BG, 
+                color: msg.sender === 'user' ? '#fff' : '#333', whiteSpace: 'pre-wrap', 
+                marginLeft: msg.sender === 'bot' ? 0 : 'auto', marginRight: msg.sender === 'user' ? 0 : 'auto' }}
+                // Usa o 'dangerouslySetInnerHTML' para renderizar o negrito (**) do bot
+                dangerouslySetInnerHTML={{ __html: msg.text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') }}>
+              </div>
+            </div>
+          ))
+        }
+      </div>
+
+      {/* INPUT */}
+      <div style={{ padding: '0.5rem 1rem', borderTop: '1px solid #eee', display: 'flex', alignItems: 'center' }}>
+        
+        <input type="file" accept="image/*" id="fileInput" onChange={handleFileChange} style={{ display: 'none' }} disabled={isProcessing} />
+        <label htmlFor="fileInput" style={{ cursor: isProcessing ? 'default' : 'pointer', fontSize: isMobile ? '1.8rem' : '1.5rem', marginRight: '0.5rem', opacity: isProcessing ? 0.5 : 1 }}>📷</label>
+
+   
+        <div style={{ flex: 1, position: 'relative' }}>
+          <input 
+            type="text" 
+            value={inputValue} 
+            onChange={(e) => setInputValue(e.target.value)} 
+            onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()} 
+            placeholder={pendingDocumentText ? "Digite sua pergunta sobre o documento..." : "Pergunte ou envie documento..."} 
+            disabled={isProcessing} // Desabilita durante o processamento
+            style={{ 
+              width: '100%', 
+              padding: '0.75rem 1rem', 
+              paddingRight: isMobile ? '60px' : '70px', 
+              borderRadius: '25px', 
+              fontSize: '1rem',
+              border: `1px solid ${isProcessing ? PRIMARY_COLOR : '#ccc'}`,
+              backgroundColor: isProcessing ? '#f5f5f5' : '#fff',
+              boxSizing: 'border-box', 
+            }} 
+          />
+        
+          <button 
+            onClick={() => handleSendMessage()} 
+            disabled={isProcessing || !inputValue.trim()}
+            style={{ 
+              position: 'absolute', 
+              right: '5px', 
+              top: '50%', 
+              transform: 'translateY(-50%)', 
+              padding: isMobile ? '0.4rem 0.6rem' : '0.5rem 0.75rem', 
+              color: '#fff', 
+              border: 'none', 
+              borderRadius: '25px', 
+              cursor: 'pointer', 
+              fontWeight: 'bold', 
+              backgroundColor: PRIMARY_COLOR,
+              fontSize: '0.9rem',
+              opacity: (isProcessing || !inputValue.trim()) ? 0.5 : 1, // Feedback visual de desabilitado
+              zIndex: 2 
+            }}
+          >
+            Enviar
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 };
 
 export default Chatbot;

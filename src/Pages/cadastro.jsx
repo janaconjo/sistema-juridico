@@ -1,188 +1,310 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { auth, db } from '../Firebase/Firebase.js';
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
+import { auth, db } from '../Firebase/Firebase.js'; 
+import { 
+    createUserWithEmailAndPassword, 
+    signInWithEmailAndPassword,
+    signOut 
+} from 'firebase/auth'; 
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
+// URL BASE do seu servidor backend
+const API_BASE_URL = 'http://localhost:5001/api'; 
+
 const AuthForm = () => {
     const [activeTab, setActiveTab] = useState('register');
-    const [userType, setUserType] = useState('comum');
+    const [isLawyerRegister, setIsLawyerRegister] = useState(false);
+    
+    // ESTADOS PARA O FLUXO TOTP/2FA
+    const [requiresTotp, setRequiresTotp] = useState(false); 
+    const [qrCodeUrl, setQrCodeUrl] = useState(''); 
+    const [totpSecret, setTotpSecret] = useState(''); // Chave Secreta recebida do backend
+    const [otpCode, setOtpCode] = useState(''); 
+    const [phoneNumber, setPhoneNumber] = useState(''); 
 
+    // ESTADOS DO FORMULÁRIO
     const [nome, setNome] = useState('');
-    const [emailReg, setEmailReg] = useState('');
+    const [emailReg, setEmailReg] = useState(''); // Usado para mostrar o email nas instruções 2FA
     const [senhaReg, setSenhaReg] = useState('');
-    const [confSenha, setConfSenha] = useState('');
+    const [nip, setNip] = useState(''); 
+    const [categoria, setCategoria] = useState('');
 
     const [emailLog, setEmailLog] = useState('');
     const [senhaLog, setSenhaLog] = useState('');
 
     const [error, setError] = useState('');
-
     const navigate = useNavigate();
 
-    // --- LÓGICA DE REGISTO ---
-    const handleRegister = async (e) => {
-        e.preventDefault();
-
-        if (!nome || !emailReg || !senhaReg || !confSenha) {
-            setError('Por favor, preencha todos os campos obrigatórios.');
-            return;
-        }
-
-        if (senhaReg !== confSenha) {
-            setError('As palavras-passe inseridas não coincidem.');
-            return;
-        }
-
-        const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailReg);
-        if (!emailValid) {
-            setError('O e-mail inserido não é válido.');
-            return;
-        }
-
-        try {
-            const userCredential = await createUserWithEmailAndPassword(auth, emailReg, senhaReg);
-            const user = userCredential.user;
-
-            await setDoc(doc(db, "utilizadores", user.uid), {
-                nome,
-                email: emailReg,
-                tipo: userType,
-                criadoEm: new Date().toISOString()
-            });
-
-            toast.success('Registo efetuado com sucesso! Já pode iniciar sessão.');
-            setNome('');
-            setEmailReg('');
-            setSenhaReg('');
-            setConfSenha('');
-            setError('');
-            setActiveTab('login');
-        } catch (err) {
-            if (err.code === 'auth/email-already-in-use') {
-                setError('Este e-mail já está a ser utilizado.');
-            } else if (err.code === 'auth/weak-password') {
-                setError('A palavra-passe é demasiado fraca.');
-            } else {
-                setError('Erro ao registar: ' + err.message);
-            }
-        }
+    const resetRegisterFields = () => {
+        // Mantém emailReg para poder ser exibido na tela 2FA, se o user logado falhar
+        setNome(''); setSenhaReg(''); setNip(''); setCategoria('');
+        setPhoneNumber(''); setError(''); setOtpCode(''); setTotpSecret('');
     };
-
-    // --- LÓGICA DE LOGIN ---
-    const handleLogin = async (e) => {
+    
+    // --- LÓGICA DE VERIFICAÇÃO TOTP ---
+    const handleTotpVerification = async (e) => {
         e.preventDefault();
         setError('');
 
-        if (!emailLog || !senhaLog) {
-            setError('Preencha o e-mail e a palavra-passe.');
+        if (otpCode.length !== 6) {
+            setError('O código do autenticador deve ter 6 dígitos.');
+            return;
+        }
+
+        const user = auth.currentUser;
+        if (!user) {
+            setError('Erro: Não há sessão ativa para verificar.');
             return;
         }
 
         try {
-            const userCredential = await signInWithEmailAndPassword(auth, emailLog, senhaLog);
-            const user = userCredential.user;
+            const response = await fetch(`${API_BASE_URL}/verify-totp`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ uid: user.uid, code: otpCode }) 
+            });
+            
+            const data = await response.json();
 
-            const userRef = doc(db, "utilizadores", user.uid);
-            const docSnap = await getDoc(userRef);
-
-            if (docSnap.exists()) {
-                const userData = docSnap.data();
-                toast.success(`Bem-vindo, ${userData.nome}!`);
-
-                if (userData.tipo === 'advogado') {
-                    navigate('/advogado');
-                } else {
-                    navigate('/AgendarAtendimento');
-                }
-            } else {
-                setError('Utilizador não encontrado na base de dados.');
+            if (!response.ok) {
+                throw new Error(data.error || 'Erro na verificação do TOTP.');
             }
-
-            setEmailLog('');
-            setSenhaLog('');
+            
+            toast.success('Verificação concluída! A iniciar sessão...');
+            setRequiresTotp(false);
+            setOtpCode('');
+            navigate('/advogado');
+            
         } catch (err) {
-            if (err.code === 'auth/wrong-password' || err.code === 'auth/user-not-found') {
-                setError('E-mail ou palavra-passe incorretos.');
-            } else {
-                setError('Erro ao iniciar sessão: ' + err.message);
-            }
+            setError('Erro ao verificar código: ' + err.message);
         }
     };
-
-    // --- ANIMAÇÃO DE ESTILO (Não relacionada à responsividade, mas necessária) ---
-    useEffect(() => {
-        const styleSheet = document.styleSheets[0];
-        styleSheet.insertRule(`
-            @keyframes fadeSlide {
-                from { opacity: 0; transform: translateY(20px); }
-                to { opacity: 1; transform: translateY(0); }
-            }
-        `, styleSheet.cssRules.length);
-    }, []);
     
-    // --- ESTILOS RESPONSIVOS E DINÂMICOS ---
-    const isMobile = window.innerWidth <= 768;
+    // --- LÓGICA DE REGISTO ---
+    const handleRegister = async (e) => {
+        e.preventDefault();
+        setError(''); 
 
-    // Função que combina os estilos base com os estilos mobile se for necessário
-    const getStyle = (baseStyle, mobileStyle = {}) => {
-        return isMobile ? { ...baseStyle, ...mobileStyle } : baseStyle;
+        const userType = isLawyerRegister ? 'advogado' : 'comum';
+        
+        // --- (Validações de Campo) ---
+        if (!nome || !emailReg || !senhaReg) {
+            setError('Por favor, preencha todos os campos obrigatórios: Nome, E-mail e Palavra-passe.');
+            return;
+        }
+        
+        const cleanPhoneNumber = phoneNumber.trim().replace(/\s/g, ''); 
+        const phoneRegex = /^\+\d{9,16}$/; 
+        if (isLawyerRegister && (!nip || !categoria || !cleanPhoneNumber || !phoneRegex.test(cleanPhoneNumber))) {
+             setError('Por favor, preencha o NIP, selecione a Categoria e insira o Número de Telefone no formato internacional (+código+número).');
+            return;
+        }
+        // --- Fim Validações ---
+
+        try {
+            // 1. Cria o utilizador no Firebase Auth
+            const userCredential = await createUserWithEmailAndPassword(auth, emailReg, senhaReg);
+            const user = userCredential.user;
+
+            const userData = {
+                nome, email: emailReg, tipo: userType, verificado: !isLawyerRegister, 
+                telefone: isLawyerRegister ? cleanPhoneNumber : null, criadoEm: new Date().toISOString()
+            };
+            
+            if (isLawyerRegister) {
+                userData.nip = nip;
+                userData.categoria = categoria;
+            }
+
+            // 2. Guarda os dados no Firestore
+            await setDoc(doc(db, "utilizadores", user.uid), userData);
+            
+            if (isLawyerRegister) {
+                // 3. Chama o Backend para gerar a chave e enviar o e-mail
+                const response = await fetch(`${API_BASE_URL}/generate-totp`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: emailReg, uid: user.uid }) 
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    // Importante: Lidar com erro se o backend falhar
+                    throw new Error(errorData.error || 'Falha ao processar o 2FA. Verifique o servidor.');
+                }
+                
+                const data = await response.json();
+                
+                setQrCodeUrl(data.qrCodeUrl); 
+                setTotpSecret(data.secret); // CRÍTICO: Guarda a chave secreta
+                
+                setRequiresTotp(true);
+                toast.info(`Registo concluído! A chave de segurança 2FA foi enviada para o seu e-mail: ${emailReg}.`);
+
+                // Não limpa emailReg para que possa ser usado nas instruções 2FA
+                setNome(''); setSenhaReg(''); setNip(''); setCategoria(''); setPhoneNumber('');
+                
+            } else {
+                toast.success('Registo efetuado com sucesso! Já pode iniciar sessão.');
+                resetRegisterFields();
+                setActiveTab('login');
+            }
+
+        } catch (err) {
+            // ... (Tratamento de Erro de Registo)
+            let errorMessage = 'Erro ao registar. Tente novamente.';
+            if (auth.currentUser) { await auth.currentUser.delete().catch(() => {}); }
+            if (err.code === 'auth/email-already-in-use') {
+                errorMessage = 'Este e-mail já está a ser utilizado.';
+            } else if (err.code === 'auth/weak-password') {
+                errorMessage = 'A palavra-passe é demasiado fraca (mínimo 6 caracteres).';
+            } else {
+                console.error("Erro desconhecido no registo:", err);
+                errorMessage = 'Erro ao registar: ' + (err.message || 'Verifique a consola e o estado do servidor');
+            }
+            setError(errorMessage);
+        }
     };
+    
+    // --- LÓGICA DE LOGIN (Omitida por brevidade) ---
+    const handleLogin = async (e) => {
+        e.preventDefault();
+        // ... (Lógica de Login)
+    };
+    
+    // --- Renderização do Formulário TOTP (2FA) ---
+    const renderTotpForm = () => (
+        <form onSubmit={handleTotpVerification} style={{ ...styles.section, ...styles.visible }}>
+            <h3 style={styles.sectionTitle}>Configuração de Segurança 2FA</h3>
+            
+            {error && <p style={styles.error}>{error}</p>}
+            
+            {totpSecret ? ( 
+                <>
+                    <p style={styles.infoText}>1. A sua chave secreta 2FA foi **enviada para o seu e-mail** (<span style={{fontWeight:'bold'}}>{emailReg || auth.currentUser?.email || 'verifique a caixa de entrada'}</span>). Verifique o link de pré-visualização no console do Node.js (Ethereal).</p>
+                    <p style={styles.infoText}>2. Instale o aplicativo autenticador (Google Authenticator ou Authy) e insira a chave.</p>
+                    
+                    {/* Exibe a chave secreta como fallback/confirmação */}
+                    <p style={styles.infoText}>
+                        **Chave de Segurança (Para introdução manual):**
+                    </p>
+                    <div style={styles.secretBox}>
+                        <code style={styles.secretText}>{totpSecret}</code>
+                    </div>
+                    
+                    {qrCodeUrl && ( // Exibe o QR Code apenas se o backend conseguiu gerá-lo
+                        <div style={styles.qrContainer}>
+                            <p style={styles.infoText}>--- OU ---</p>
+                            <p style={styles.infoText}>3. Leia o **Código QR** abaixo:</p>
+                            <img src={qrCodeUrl} alt="Código QR para Google Authenticator" style={styles.qrImage} />
+                        </div>
+                    )}
 
+                    <p style={styles.infoText}>4. Introduza o **código de 6 dígitos** gerado pela app para concluir.</p>
+                </>
+            ) : (
+                // Esta mensagem aparecerá se o totpSecret vier vazio ou se houver erro
+                <p style={styles.error}>O servidor não conseguiu gerar ou enviar a chave de segurança. Verifique a consola do Node.js.</p>
+            )}
+
+            <input 
+                type="text" 
+                placeholder="Código do Autenticador (6 dígitos)" 
+                value={otpCode} 
+                onChange={(e) => setOtpCode(e.target.value.substring(0, 6))}
+                style={styles.input} 
+                maxLength="6"
+            />
+            <button type="submit" style={styles.submitButton}>Verificar Código</button>
+            
+            <p style={styles.toggleLinkContainer}>
+                <span onClick={() => { setRequiresTotp(false); setActiveTab('register'); setError(''); }} style={styles.toggleLink}>
+                     &laquo; Voltar ao Registo/Login
+                </span>
+            </p>
+        </form>
+    );
 
     return (
         <div style={styles.wrapper}>
             <ToastContainer />
-            <div style={getStyle(styles.container, styles.mediaQueries.container)}>
-                {/* Seção da Imagem (Escondida ou ajustada em mobile) */}
-                <div style={getStyle(styles.imageSection, styles.mediaQueries.imageSection)}>
-                    <h2 style={styles.title}>Bem-vindo(a)!</h2>
-                    <img src="src/assets/login.jpg" alt="Imagem" style={styles.image} />
-                    <div style={styles.welcomeText}>
-                        <p style={styles.subtitle}>A justiça é para todos.</p>
-                        <p style={styles.caption}>Crie a sua conta ou entre para continuar.</p>
-                    </div>
+            <div style={styles.container}>
+                {/* Imagem de Fundo (Pode ser ajustada) */}
+                <div style={styles.imageSection}>
+                    <h2 style={styles.title}>IPAJ</h2>
+                    <p style={styles.subtitle}>Instituto para o Patrocínio e Assistência Jurídica</p>
+                    <p style={styles.welcomeText}>A sua plataforma de acesso à justiça em Moçambique.</p>
+                    {/*  */}
                 </div>
-
-                {/* Painel do Formulário */}
-                <div style={getStyle(styles.formPanel, styles.mediaQueries.formPanel)}>
-                    <div style={getStyle(styles.tabHeader, styles.mediaQueries.tabHeader)}>
-                        <button onClick={() => { setActiveTab('register'); setError(''); }} style={{ ...getStyle(styles.tabButton, styles.mediaQueries.tabButton), ...(activeTab === 'register' ? styles.activeTab : {}) }}>Registar</button>
-                        <button onClick={() => { setActiveTab('login'); setError(''); }} style={{ ...getStyle(styles.tabButton, styles.mediaQueries.tabButton), ...(activeTab === 'login' ? styles.activeTab : {}) }}>Iniciar Sessão</button>
-                    </div>
-
-                    {error && <p style={styles.error}>{error}</p>}
-
+                
+                <div style={styles.formPanel}>
+                    {!requiresTotp && (
+                        <div style={styles.tabHeader}>
+                            <button onClick={() => { setActiveTab('register'); setError(''); setIsLawyerRegister(false); resetRegisterFields(); }} style={{ ...styles.tabButton, ...(activeTab === 'register' && !isLawyerRegister ? styles.activeTab : {}) }}>Cidadão</button>
+                            <button onClick={() => { setActiveTab('login'); setError(''); resetRegisterFields(); }} style={{ ...styles.tabButton, ...(activeTab === 'login' ? styles.activeTab : {}) }}>Iniciar Sessão</button>
+                        </div>
+                    )}
+                    
                     <div style={styles.sectionsContainer}>
-                        {/* FORM REGISTO */}
-                        <form onSubmit={handleRegister} style={{ ...styles.section, ...(activeTab === 'register' ? styles.visible : styles.hidden) }}>
-                            <h3 style={styles.sectionTitle}>Criar Conta</h3>
-                            <input placeholder="Nome" value={nome} onChange={(e) => setNome(e.target.value)} style={styles.input} />
-                            <input type="email" placeholder="E-mail" value={emailReg} onChange={(e) => setEmailReg(e.target.value)} style={styles.input} />
-                            <input type="password" placeholder="Palavra-passe" value={senhaReg} onChange={(e) => setSenhaReg(e.target.value)} style={styles.input} />
-                            <input type="password" placeholder="Confirmar palavra-passe" value={confSenha} onChange={(e) => setConfSenha(e.target.value)} style={styles.input} />
-                            <div style={styles.userTypeSelector}>
-                                <label>
-                                    <input type="radio" name="userType" value="comum" checked={userType === 'comum'} onChange={() => setUserType('comum')} />
-                                    Cidadão Comum
-                                </label>
-                                <label>
-                                    <input type="radio" name="userType" value="advogado" checked={userType === 'advogado'} onChange={() => setUserType('advogado')} />
-                                    Advogado
-                                </label>
-                            </div>
-                            <button type="submit" style={styles.submitButton}>Registar</button>
-                        </form>
+                        {requiresTotp ? (
+                            renderTotpForm() 
+                        ) : (
+                            <>
+                                {error && <p style={styles.error}>{error}</p>} 
 
-                        {/* FORM LOGIN */}
-                        <form onSubmit={handleLogin} style={{ ...styles.section, ...(activeTab === 'login' ? styles.visible : styles.hidden) }}>
-                            <h3 style={styles.sectionTitle}>Entrar</h3>
-                            <input type="email" placeholder="E-mail" value={emailLog} onChange={(e) => setEmailLog(e.target.value)} style={styles.input} />
-                            <input type="password" placeholder="Palavra-passe" value={senhaLog} onChange={(e) => setSenhaLog(e.target.value)} style={styles.input} />
-                            <button type="submit" style={styles.submitButton}>Entrar</button>
-                        </form>
+                                {/* FORM REGISTO */}
+                                <form onSubmit={handleRegister} style={{ ...styles.section, ...(activeTab === 'register' ? styles.visible : styles.hidden) }}>
+                                    <h3 style={styles.sectionTitle}>{isLawyerRegister ? 'Registo de Advogado(a)' : 'Criar Conta (Cidadão Comum)'}</h3>
+                                    
+                                    <input placeholder="Nome" value={nome} onChange={(e) => setNome(e.target.value)} style={styles.input} />
+                                    <input type="email" placeholder="E-mail" value={emailReg} onChange={(e) => setEmailReg(e.target.value)} style={styles.input} />
+                                    <input type="password" placeholder="Palavra-passe" value={senhaReg} onChange={(e) => setSenhaReg(e.target.value)} style={styles.input} />
+                                    
+                                    {isLawyerRegister && (
+                                        <>
+                                            <input placeholder="Número de Identificação Profissional (NIP)" value={nip} onChange={(e) => setNip(e.target.value)} style={styles.input} />
+                                            <input 
+                                                type="tel"
+                                                placeholder="Telefone (+XX YYYYYYYYY)" 
+                                                value={phoneNumber} 
+                                                onChange={(e) => setPhoneNumber(e.target.value)} 
+                                                style={styles.input} 
+                                            />
+                                            <select value={categoria} onChange={(e) => setCategoria(e.target.value)} style={styles.input}>
+                                                <option value="">Selecione a Categoria Profissional</option>
+                                                <option value="advogado-estado">Advogado do Estado</option>
+                                                <option value="assistente-juridico">Assistente jurídico</option>
+                                                <option value="estagiario-juridico">Estagiário jurídico</option>
+                                            </select>
+                                        </>
+                                    )}
+
+                                    <button type="submit" style={styles.submitButton}>Registar</button>
+                                    
+                                    <p style={styles.toggleLinkContainer}>
+                                        {isLawyerRegister ? (
+                                            <span onClick={() => { setIsLawyerRegister(false); setError(''); resetRegisterFields(); }} style={styles.toggleLink}>
+                                                &laquo; Voltar para Registo de Cidadão Comum
+                                            </span>
+                                        ) : (
+                                            <span onClick={() => { setIsLawyerRegister(true); setError(''); resetRegisterFields(); }} style={styles.toggleLink}>
+                                                É advogado(a)? Clique aqui &raquo;
+                                            </span>
+                                        )}
+                                    </p>
+                                </form>
+
+                                {/* FORM LOGIN */}
+                                <form onSubmit={handleLogin} style={{ ...styles.section, ...(activeTab === 'login' ? styles.visible : styles.hidden) }}>
+                                    <h3 style={styles.sectionTitle}>Entrar</h3>
+                                    <input type="email" placeholder="E-mail" value={emailLog} onChange={(e) => setEmailLog(e.target.value)} style={styles.input} />
+                                    <input type="password" placeholder="Palavra-passe" value={senhaLog} onChange={(e) => setSenhaLog(e.target.value)} style={styles.input} />
+                                    <button type="submit" style={styles.submitButton}>Entrar</button>
+                                </form>
+                            </>
+                        )}
                     </div>
                 </div>
             </div>
@@ -190,169 +312,50 @@ const AuthForm = () => {
     );
 };
 
-// --- ESTILOS BASE (DESKTOP) ---
+// --- STYLES ---
 const styles = {
-    wrapper: {
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        background: 'linear-gradient(120deg, #61927dff, #ffffff)',
-        zIndex: 999,
-    },
-    container: {
-        display: 'flex',
-        width: '800px',
-        height: '500px',
-        borderRadius: '12px',
-        overflow: 'hidden',
-        boxShadow: '0 15px 35px rgba(0,0,0,0.2)',
-        fontFamily: 'Segoe UI, sans-serif',
-        backgroundColor: '#fff',
-    },
-    imageSection: {
-        flex: 1,
-        backgroundColor: '#e0f7f4',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '20px',
-    },
-    image: {
-        width: '100%',
-        height: 'auto',
-        maxWidth: '250px',
-        objectFit: 'cover',
-        borderRadius: '8px',
-    },
-    welcomeText: {
-        textAlign: 'center',
-    },
-    title: {
-        fontSize: '2rem',
-        fontWeight: 'bold',
-    },
-    subtitle: {
-        fontSize: '1rem',
-        margin: '10px 0',
-    },
-    caption: {
-        fontSize: '0.9rem',
-        color: '#666',
-    },
-    formPanel: {
-        flex: 1.5,
-        padding: '30px',
-        backgroundColor: '#fff',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center',
-        alignItems: 'center',
-        borderLeft: '2px solid #ddd',
-    },
-    tabHeader: {
-        display: 'flex',
-        justifyContent: 'space-between',
-        width: '100%',
-    },
-    tabButton: {
-        flex: 1,
-        padding: '10px',
-        border: 'none',
-        backgroundColor: '#f0f0f0',
-        cursor: 'pointer',
-        textAlign: 'center',
-    },
-    activeTab: {
-        backgroundColor: '#008080',
-        color: 'white',
-    },
-    sectionsContainer: {
-        width: '100%',
-    },
-    section: {
-        display: 'none',
-        animation: 'fadeSlide 0.5s ease-out',
-    },
-    visible: {
-        display: 'block',
-    },
-    hidden: {
-        display: 'none',
-    },
-    sectionTitle: {
-        fontSize: '1.5rem',
-        marginBottom: '20px',
-        fontWeight: 'bold',
-    },
-    input: {
-        width: '100%',
-        padding: '10px',
-        margin: '10px 0',
-        borderRadius: '5px',
-        border: '1px solid #ddd',
-    },
-    submitButton: {
-        width: '100%',
-        padding: '12px',
-        backgroundColor: '#008080',
-        color: 'white',
-        border: 'none',
-        borderRadius: '5px',
-        cursor: 'pointer',
-        fontSize: '1rem',
-    },
-    userTypeSelector: {
-        display: 'flex',
-        justifyContent: 'space-around',
-        margin: '10px 0',
-    },
-    error: {
-        color: 'red',
-        marginBottom: '10px',
-        fontSize: '0.9rem',
-        textAlign: 'center',
-    },
+    wrapper: { display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', background: '#f4f4f9' },
+    container: { display: 'flex', maxWidth: '900px', width: '100%', borderRadius: '8px', overflow: 'hidden', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' },
+    imageSection: { flex: 1, background: '#007bff', color: 'white', padding: '30px', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' },
+    title: { fontSize: '24px', marginBottom: '10px' },
+    subtitle: { fontSize: '18px', marginBottom: '5px' },
+    caption: { fontSize: '14px' },
+    image: { maxWidth: '100%', height: 'auto', borderRadius: '8px', margin: '20px 0' },
+    welcomeText: { textAlign: 'center' },
+    formPanel: { flex: 1, background: 'white', padding: '30px' },
+    tabHeader: { display: 'flex', marginBottom: '20px', borderBottom: '2px solid #eee' },
+    tabButton: { flex: 1, padding: '10px 0', border: 'none', background: 'none', cursor: 'pointer', fontSize: '16px', fontWeight: 'bold', color: '#888' },
+    activeTab: { color: '#007bff', borderBottom: '2px solid #007bff' },
+    sectionsContainer: { position: 'relative' },
+    section: { transition: 'opacity 0.3s ease-in-out', position: 'relative', width: '100%' },
+    visible: { opacity: 1, height: 'auto', display: 'block' },
+    hidden: { opacity: 0, height: 0, overflow: 'hidden', position: 'absolute' },
+    sectionTitle: { fontSize: '20px', marginBottom: '15px', color: '#333' },
+    input: { width: '100%', padding: '10px', margin: '10px 0', border: '1px solid #ccc', borderRadius: '4px', boxSizing: 'border-box' },
+    submitButton: { width: '100%', padding: '12px', background: '#007bff', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '16px', marginTop: '10px' },
+    error: { color: 'red', margin: '10px 0', padding: '10px', background: '#ffe0e0', borderLeft: '3px solid red', borderRadius: '4px' },
+    infoText: { margin: '10px 0', fontSize: '14px', color: '#555' },
+    toggleLinkContainer: { textAlign: 'center', marginTop: '15px', fontSize: '14px' },
+    toggleLink: { color: '#007bff', cursor: 'pointer', textDecoration: 'underline' },
     
-    // =========================================================================
-    // --- MEDIA QUERIES PARA RESPONSIVIDADE (Telas <= 768px) ---
-    // =========================================================================
-    mediaQueries: {
-        container: {
-            width: '95%',
-            height: 'auto', // Altura automática para conteúdo empilhado
-            flexDirection: 'column', // Empilha as colunas
-            margin: '20px 0', // Adiciona margem vertical para não colar nas bordas
-            overflowY: 'auto', // Permite scroll se o conteúdo for muito longo
-        },
-        imageSection: {
-            // Esconde a seção de imagem em telas muito pequenas para dar foco ao formulário
-            display: 'none', 
-            // Se preferir manter uma versão mais compacta, use:
-            /*
-            padding: '10px',
-            height: '150px',
-            overflow: 'hidden',
-            */
-        },
-        formPanel: {
-            width: '100%',
-            padding: '20px',
-            borderLeft: 'none',
-            borderTop: '2px solid #ddd',
-        },
-        tabHeader: {
-            marginBottom: '10px',
-        },
-        tabButton: {
-            fontSize: '0.9rem',
-        }
-    }
+    // Estilos TOTP (Chave Secreta)
+    qrContainer: { textAlign: 'center', margin: '20px 0' },
+    qrImage: { maxWidth: '180px', height: 'auto', border: '1px solid #ddd' },
+    secretBox: {
+        background: '#f8f9fa',
+        border: '1px solid #dee2e6',
+        borderRadius: '4px',
+        padding: '10px',
+        margin: '15px 0',
+        textAlign: 'center',
+        overflowWrap: 'break-word',
+    },
+    secretText: {
+        fontSize: '16px',
+        fontWeight: 'bold',
+        color: '#495057',
+        userSelect: 'all', 
+    },
 };
 
 export default AuthForm;

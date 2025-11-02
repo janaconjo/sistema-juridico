@@ -22,3 +22,11 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Excluir dependências
+/node_modules
+
+# Segredos e chaves de serviço
+.env
+*.env
+backend/serviceAccountKey.json
