@@ -1,30 +1,26 @@
 import React, { useState, useEffect } from 'react';
-// Note: Tesseract.js deve ser importado como um worker para melhor performance
 import { createWorker } from 'tesseract.js';
 import axios from 'axios';
 
 const PRIMARY_COLOR = '#004D40'; 
 const BACKGROUND_LIGHT = '#F9F9F9'; 
 const BOT_MESSAGE_BG = '#EAEAEA'; 
-
-// --- Configuração responsiva ---
 const CHAT_STYLES = {
   desktop: { width: '420px', maxHeight: '600px', height: '500px' },
   mobile: { width: '100%', height: '100%', top: 0, right: 0, bottom: 0, left: 0, borderRadius: 0 }
 };
 
-// --- Otimiza a função de Tesseract para criar o worker apenas uma vez
+
 let ocrWorker = null;
 
 const Chatbot = ({ isOpen, setIsOpen }) => {
   const [messages, setMessages] = useState([]); 
   const [inputValue, setInputValue] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
-  // ⬅️ NOVO ESTADO: Armazena o texto do documento para anexar à próxima pergunta do usuário
   const [pendingDocumentText, setPendingDocumentText] = useState(''); 
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
 
-  // Efeito para criar e terminar o worker do Tesseract
+
   useEffect(() => {
     const initializeWorker = async () => {
       if (!ocrWorker) {
@@ -34,7 +30,7 @@ const Chatbot = ({ isOpen, setIsOpen }) => {
     };
     initializeWorker();
 
-    // Limpar worker ao desmontar
+    
     return () => {
       if (ocrWorker) {
         ocrWorker.terminate();
@@ -43,7 +39,7 @@ const Chatbot = ({ isOpen, setIsOpen }) => {
     };
   }, []);
 
-  // Efeito para lidar com a responsividade
+
   useEffect(() => {
     const handleResize = () => setWindowWidth(window.innerWidth);
     window.addEventListener('resize', handleResize);
@@ -53,14 +49,13 @@ const Chatbot = ({ isOpen, setIsOpen }) => {
   const isMobile = windowWidth <= 768;
   const currentStyles = isMobile ? CHAT_STYLES.mobile : { ...CHAT_STYLES.desktop, bottom: '80px', right: '20px' };
 
-  // ⬅️ ALTERAÇÃO CRÍTICA: Anexa o texto do documento à pergunta do usuário, se houver.
   const sendToBackend = async (userQuestion) => {
     let messageToSend = userQuestion;
 
     if (pendingDocumentText) {
-      // Combina o texto extraído com a pergunta do usuário para o Gemini
+     
       messageToSend = `DOCUMENTO PARA ANÁLISE: """${pendingDocumentText}""" PERGUNTA JURÍDICA: ${userQuestion}`;
-      setPendingDocumentText(''); // Limpa o texto pendente após o envio
+      setPendingDocumentText(''); 
     }
     
     try {
@@ -84,10 +79,10 @@ const Chatbot = ({ isOpen, setIsOpen }) => {
   };
 
 
-  // ❌ REMOÇÃO: Função playSound removida conforme solicitado.
+  
 
   const handleSendMessage = async (textToSend) => {
-    if (isProcessing) return; // Evita envios múltiplos
+    if (isProcessing) return; 
     
     const messageText = textToSend || inputValue;
     if (!messageText.trim()) return;
@@ -99,11 +94,7 @@ const Chatbot = ({ isOpen, setIsOpen }) => {
     // Mensagem de processamento
     const processingMessage = { text: 'A gerar resposta...', sender: 'bot', temp: true };
     setMessages(prev => [...prev, processingMessage]);
-
-    // ⬅️ CRÍTICO: Envia apenas a PERGUNTA do usuário. O texto do documento é anexado dentro de sendToBackend.
     const botReply = await sendToBackend(messageText);
-
-    // Remove a mensagem temporária e adiciona a resposta final
     setMessages(prev => {
       const filtered = prev.filter(msg => !msg.temp);
       return [...filtered, { text: botReply, sender: 'bot' }];
@@ -112,7 +103,7 @@ const Chatbot = ({ isOpen, setIsOpen }) => {
     setIsProcessing(false);
   };
 
-  // --- Upload de imagem ---
+
   const handleFileChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -130,23 +121,19 @@ const Chatbot = ({ isOpen, setIsOpen }) => {
     try {
       const { rawText, summary } = await performOcrAnalysis(file);
 
-      // ⬅️ ALTERAÇÃO CRÍTICA: Define o texto bruto (rawText) como pendente
       setPendingDocumentText(rawText);
-      
-      // Remove a mensagem temporária de processamento
+    
       setMessages(prev => prev.filter(msg => !msg.temp));
-
-      // Pede ao usuário que insira a pergunta
       setMessages(prev => [
         ...prev,
         { text: `✅ Texto extraído com sucesso: ${summary} \n\n**O que gostaria de saber sobre este documento?** Por favor, digite a sua pergunta.`, sender: 'bot' }
       ]);
       
-      setIsProcessing(false); // Permite ao usuário digitar a próxima pergunta
+      setIsProcessing(false); 
 
     } catch (error) {
       console.error("Erro no Tesseract/OCR:", error);
-      setMessages(prev => prev.filter(msg => !msg.temp)); // Remove a mensagem temporária
+      setMessages(prev => prev.filter(msg => !msg.temp)); 
       setMessages(prev => [...prev, { text: '❌ Erro ao processar a imagem. Tente novamente.', sender: 'bot' }]);
       setIsProcessing(false);
     }
@@ -155,13 +142,13 @@ const Chatbot = ({ isOpen, setIsOpen }) => {
  
   const handleClearChat = () => {
     setMessages([]);
-    setPendingDocumentText(''); // Limpa qualquer documento pendente
+    setPendingDocumentText(''); 
   };
 
 
   return (
     <div style={{ 
-      ...currentStyles, // Aplica estilos de desktop ou mobile
+      ...currentStyles, 
       display: isOpen ? 'flex' : 'none', 
       flexDirection: 'column', 
       position: 'fixed', 
@@ -191,7 +178,7 @@ const Chatbot = ({ isOpen, setIsOpen }) => {
                 backgroundColor: msg.sender === 'user' ? PRIMARY_COLOR : BOT_MESSAGE_BG, 
                 color: msg.sender === 'user' ? '#fff' : '#333', whiteSpace: 'pre-wrap', 
                 marginLeft: msg.sender === 'bot' ? 0 : 'auto', marginRight: msg.sender === 'user' ? 0 : 'auto' }}
-                // Usa o 'dangerouslySetInnerHTML' para renderizar o negrito (**) do bot
+        
                 dangerouslySetInnerHTML={{ __html: msg.text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') }}>
               </div>
             </div>
@@ -199,7 +186,7 @@ const Chatbot = ({ isOpen, setIsOpen }) => {
         }
       </div>
 
-      {/* INPUT */}
+  
       <div style={{ padding: '0.5rem 1rem', borderTop: '1px solid #eee', display: 'flex', alignItems: 'center' }}>
         
         <input type="file" accept="image/*" id="fileInput" onChange={handleFileChange} style={{ display: 'none' }} disabled={isProcessing} />
@@ -213,7 +200,7 @@ const Chatbot = ({ isOpen, setIsOpen }) => {
             onChange={(e) => setInputValue(e.target.value)} 
             onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()} 
             placeholder={pendingDocumentText ? "Digite sua pergunta sobre o documento..." : "Pergunte ou envie documento..."} 
-            disabled={isProcessing} // Desabilita durante o processamento
+            disabled={isProcessing} 
             style={{ 
               width: '100%', 
               padding: '0.75rem 1rem', 
@@ -242,8 +229,7 @@ const Chatbot = ({ isOpen, setIsOpen }) => {
               fontWeight: 'bold', 
               backgroundColor: PRIMARY_COLOR,
               fontSize: '0.9rem',
-              opacity: (isProcessing || !inputValue.trim()) ? 0.5 : 1, // Feedback visual de desabilitado
-              zIndex: 2 
+              opacity: (isProcessing || !inputValue.trim()) ? 0.5 : 1,
             }}
           >
             Enviar

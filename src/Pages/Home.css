@@ -1,41 +1,29 @@
-/*
- * --------------------------------------------------------------------------
- * Home.css - ESTILOS FINAIS E REFORÇADOS (INCLUINDO RESET BÁSICO)
- * --------------------------------------------------------------------------
- */
 
-/* ========================================================================= */
-/* --- 1. CSS RESET BÁSICO (Para garantir que espaçamentos padrão sumam) --- */
-/* ========================================================================= */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
-/* Variáveis de Color */
+
 :root {
-    --primary: #004c4c;      /* Base: Verde-azulado Escuro */
-    --secondary: #3cb371;    /* Ação: Verde Suave */
-    --subtle: #e0f0f0;       /* Fundo Alternativo */
-    --background: #f8f8f8; /* Fundo Geral */
+    --primary: #004c4c;   
+    --secondary: #3cb371;    
+    --subtle: #e0f0f0;     
+    --background: #f8f8f8; 
     --cardBackground: #ffffff;
-    --text: #2d3748;         /* Texto Principal */
+    --text: #2d3748;      
     --menuWidth: 300px;
     --carousel-height: 450px;
 }
 
-/* -------------------------------------------------------------------------- */
-/* ESTILOS DE INTERAÇÃO E ANIMAÇÕES GERAIS */
-/* -------------------------------------------------------------------------- */
 
-/* Hover do Link no Desktop */
 .nav a:hover {
     color: var(--subtle); 
     transition: color 0.3s ease;
 }
 
-/* Animação do Botão Chatbot (Pisca-Pisca) */
+
 .chatbotButton.pulse-animation {
     animation: pulse 1.5s infinite; 
 }
@@ -53,20 +41,16 @@
     100% { transform: scale(1); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); }
 }
 
-/* Hover do Botão Padrão */
 button:hover {
     background-color: #003333 !important; 
     transition: background-color 0.3s ease;
 }
 
-/* Hover do Botão Secundário (Ação) */
 .hero-action-button:hover {
     background-color: #319a5e !important;
 }
 
-/* -------------------------------------------------------------------------- */
-/* MELHORIAS NO HERO (ESTÉTICA) */
-/* -------------------------------------------------------------------------- */
+
 .animated-hero {
     background-size: cover !important;
     background-position: center !important;
@@ -74,18 +58,18 @@ button:hover {
     display: flex;
 }
 
-/* Fortalece o overlay para melhor leitura */
+
 .animated-hero > div[style*="rgba(0, 0, 0, 0.5)"] {
     background-color: rgba(0, 0, 0, 0.65) !important; 
     transition: background-color 0.5s;
 }
 
-/* Sombra mais forte para o texto para dar destaque */
+
 .animated-hero h1, .animated-hero p {
     text-shadow: 0 3px 6px rgba(0,0,0,1); 
 }
 
-/* Animações de Entrada (Hero Section) */
+
 .animated-item {
     opacity: 0;
     transform: translateY(20px);
@@ -103,7 +87,7 @@ button:hover {
 .animated-item.delay-2 { animation-delay: 0.6s; }
 .animated-item.delay-3 { animation-delay: 0.9s; }
 
-/* Animação de Card de Serviço */
+
 .service-card {
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     background-color: var(--cardBackground) !important; 
@@ -114,9 +98,6 @@ button:hover {
 }
 
 
-/* -------------------------------------------------------------------------- */
-/* ESTILOS DA GALERIA CARROSSEL (IMPACTO) */
-/* -------------------------------------------------------------------------- */
 
 .carousel-container {
     position: relative;
@@ -213,15 +194,11 @@ button:hover {
 }
 
 
-/* -------------------------------------------------------------------------- */
-/* ESTILOS DE NAVEGAÇÃO (Desktop-First) */
-/* -------------------------------------------------------------------------- */
 
 header {
-    /* REFORÇO: Fixa o header em todas as resoluções e garante que ele cubra tudo */
     width: 100%;
     left: 0;
-    position: fixed; /* Mude para 'sticky' se preferir que ele desça com o scroll */
+    position: fixed; 
     z-index: 1000;
     box-sizing: border-box; 
 }
@@ -245,31 +222,24 @@ header {
     justify-content: center;
 }
 
-
-/* AJUSTE GERAL DO ESPAÇAMENTO ENTRE SEÇÕES (DESKTOP) */
 section {
-    padding: 4rem 0; /* REDUZIDO */
+    padding: 4rem 0; 
 }
 .sectionTitle, .sectionTitleAlt {
     margin-bottom: 1.5rem !important; 
 }
 
-
-/* -------------------------------------------------------------------------- */
-/* MEDIA QUERY: RESPONSIVIDADE (Telas menores que 900px) */
-/* -------------------------------------------------------------------------- */
 @media (max-width: 900px) {
 
     header {
         padding: 0.8rem 1rem !important;
         min-height: 60px;
-        /* As propriedades position, width, left e z-index já estão no estilo geral acima */
+     
     }
 
-    /* AJUSTE ESSENCIAL PARA O HERO */
     .animated-hero {
         min-height: 80vh !important; 
-        /* CORREÇÃO: Espaçamento suficiente para o header fixo */
+     
         padding: 8rem 1rem 2rem 1rem !important; 
         align-items: center;
         justify-content: flex-end; 
@@ -296,16 +266,15 @@ section {
     }
 
 
-    /* Títulos de Seção e Espaçamento (MOBILE) */
     section {
-        padding: 2.5rem 1rem !important; /* REDUZIDO para compactar o layout mobile */
+        padding: 2.5rem 1rem !important; 
     }
 
     .sectionTitle, .sectionTitleAlt {
         font-size: 2rem !important;
     }
 
-    /* Navegação Mobile (Menu Lateral) */
+  
     .menu-toggle {
         display: flex;
         align-items: center;
@@ -320,8 +289,7 @@ section {
     .nav {
         flex-direction: column;
         justify-content: flex-start;
-        align-items: center; /* CENTRALIZAÇÃO DOS LINKS */
-        
+        align-items: center; 
         position: fixed;
         top: 0;
         right: 0;
@@ -344,10 +312,10 @@ section {
 
     .nav a {
         display: block;
-        padding: 0.8rem 1.5rem; /* PADDING REDUZIDO para menu mais compacto */
+        padding: 0.8rem 1.5rem; 
         width: 100%;
         box-sizing: border-box;
-        text-align: center; /* CENTRALIZAÇÃO DO TEXTO DO LINK */
+        text-align: center; 
         color: var(--text) !important;
         font-weight: 500;
         margin: 0;
@@ -370,7 +338,7 @@ section {
         font-weight: bold;
     }
 
-    /* Ajustes para o Carrossel em Mobile */
+
     :root {
         --carousel-height: 350px;
     }

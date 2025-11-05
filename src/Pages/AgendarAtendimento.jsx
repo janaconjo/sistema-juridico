@@ -1,9 +1,10 @@
 import React, { useState } from "react";
 import './AgendarAtendimento.css';
-
+import { auth, db } from '../Firebase/Firebase.js'; 
+import { collection, addDoc } from "firebase/firestore";
 
 const colorPalette = {
-    primary: '#008080',    
+    primary: '#008080',      
     secondary: '#3cb371',
     tertiary: '#e0f7f4',     
     background: '#f4fbf9',   
@@ -28,7 +29,6 @@ const DashboardJuridico = () => {
 
     const [activeSection, setActiveSection] = useState('Agendamento');
     
-
     const [step, setStep] = useState(1);
     const [nome, setNome] = useState("");
     const [email, setEmail] = useState("");
@@ -39,7 +39,7 @@ const DashboardJuridico = () => {
     const totalSteps = 5;
     const progress = ((step - 1) / (totalSteps - 1)) * 100;
 
-    // ---  Formulário ---
+    // Formulário 
 
     const validateAndNext = () => {
         let isValid = false;
@@ -79,18 +79,41 @@ const DashboardJuridico = () => {
         }
     };
 
-    const handleSubmit = (e) => {
+  
+    const handleSubmit = async (e) => {
         e.preventDefault();
+        
         if (descricao.trim() === "") {
             alert("A descrição é obrigatória para agendar.");
             return;
         }
-        console.log({ nome, email, telefone, data, descricao });
-        alert("✅ Atendimento agendado com sucesso! Um email de confirmação será enviado.");
-    
+        
+        const agendamentoData = {
+            nome,
+            email,
+            telefone,
+            data,
+            descricao,
+            status: "Pendente",
+            createdAt: new Date()
+        };
+
+        try {
+        
+            const docRef = await addDoc(collection(db, "agendamentos"), agendamentoData); 
+            
+            console.log("Documento escrito com ID: ", docRef.id);
+
+            alert("✅ Atendimento agendado com sucesso! Um email de confirmação será enviado.");
+            
+           
+
+        } catch (error) {
+            console.error("Erro ao adicionar documento ao Firebase: ", error);
+            alert("❌ Ocorreu um erro ao agendar. Por favor, verifique a sua conexão e a configuração do Firebase.");
+        }
     };
 
- 
     const stepContent = () => {
         switch (step) {
             case 1:
@@ -102,7 +125,7 @@ const DashboardJuridico = () => {
             case 4:
                 return { label: "Data Preferencial", type: "date", value: data, onChange: (e) => setData(e.target.value) };
             case 5:
-                return { label: "Descrição Detalhada do Caso", isTextarea: true, value: descricao, onChange: (e) => setDescricao(e.target.value), placeholder: "Descreva o seu problema ou dúvida jurídica..." };
+                return { label: "Assunto", isTextarea: true, value: descricao, onChange: (e) => setDescricao(e.target.value), placeholder: "Descreva o seu problema ou dúvida jurídica..." };
             default:
                 return {};
         }
@@ -110,13 +133,13 @@ const DashboardJuridico = () => {
     
     const currentStep = stepContent();
 
-   
+    
     const renderMainContent = () => {
         if (activeSection !== 'Agendamento') {
             return <SimpleContent title={activeSection} />;
         }
 
-       
+        
         return (
             <>
                 <h1 style={styles.title}>Agende o seu Atendimento Jurídico</h1>
@@ -124,7 +147,7 @@ const DashboardJuridico = () => {
                     Passo {step} de {totalSteps}: {currentStep.label || 'Confirmação'}
                 </p>
 
-             
+                
                 <div style={styles.progressContainer}>
                     <div style={{ ...styles.progressBar, width: `${progress}%` }}></div>
                 </div>
@@ -156,12 +179,12 @@ const DashboardJuridico = () => {
                         <div style={styles.buttonContainer}>
                             {step > 1 && (
                                 <button style={{ ...styles.button, ...styles.buttonSecondary }} type="button" onClick={handleBack}>
-                                    ← Voltar
+                                    Voltar
                                 </button>
                             )}
                             {step < totalSteps && (
                                 <button style={styles.button} type="button" onClick={validateAndNext}>
-                                    Próximo →
+                                    Próximo 
                                 </button>
                             )}
                             {step === totalSteps && (
@@ -179,11 +202,11 @@ const DashboardJuridico = () => {
     
     return (
         <div style={styles.dashboard}>
-          
+            
             <aside style={styles.sidebar}>
                 <h2 style={styles.logo}><span style={{color: '#fff', fontWeight: 'bold'}}>IPAJ</span> <span style={{color: colorPalette.tertiary}}></span></h2>
                 <ul style={styles.menu}>
-                  
+                    
                     <li 
                         style={{...styles.menuItem, ...(activeSection === 'Agendamento' ? styles.activeMenuItem : {})}}
                         onClick={() => setActiveSection('Agendamento')}
@@ -196,12 +219,7 @@ const DashboardJuridico = () => {
                     >
                         📅 Meus Agendamentos
                     </li>
-                    <li 
-                        style={{...styles.menuItem, ...(activeSection === 'Processos Ativos' ? styles.activeMenuItem : {})}}
-                        onClick={() => setActiveSection('Processos Ativos')}
-                    >
-                        ⚖️ Processos Ativos
-                    </li>
+                    
                     <li 
                         style={{...styles.menuItem, ...(activeSection === 'Mensagens' ? styles.activeMenuItem : {})}}
                         onClick={() => setActiveSection('Mensagens')}
@@ -221,7 +239,7 @@ const DashboardJuridico = () => {
                 </div>
             </aside>
 
-          
+            
             <main style={styles.main}>
                 {renderMainContent()}
             </main>
@@ -245,6 +263,7 @@ export default DashboardJuridico;
 
 
 const styles = {
+
     dashboard: {
         display: "grid",
         gridTemplateColumns: "250px 1fr 300px",

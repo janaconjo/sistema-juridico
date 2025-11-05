@@ -6,15 +6,14 @@ import './Home.css';
 
 
 const colorPalette = {
-    primary: '#004c4c',      // Verde-azulado Escuro (Profissional)
-    secondary: '#3cb371',    // Verde Suave (Ação)
-    background: '#f8f8f8', // Fundo bem claro
+    primary: '#004c4c',     
+    secondary: '#3cb371',   
+    background: '#f8f8f8', 
     cardBackground: '#ffffff',
-    text: '#2d3748',         // Texto principal escuro
-    subtle: '#e0f0f0',       // Cor de fundo para seção alternativa
+    text: '#2d3748',        
+    subtle: '#e0f0f0',       
 };
 
-// Dados dos cards de serviço, adicionando ícones de texto limpos
 const serviceData = [
     { 
         icon: '💬', 
@@ -38,7 +37,7 @@ const serviceData = [
     },
 ];
 
-// Funções para renderizar os ícones de serviço (simples e limpos)
+
 const renderServiceIcon = (icon) => (
     <div style={styles.serviceIconContainer}>
         <span style={styles.serviceIconText}>{icon}</span>
@@ -52,7 +51,7 @@ const Home = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
 
-    // Estados e Dados para o Carrossel do Hero
+ 
     const [currentHeroSlide, setCurrentHeroSlide] = useState(0);
     const heroBackgroundImages = [
         '/assets/img/closeup-businesspeople-handshake.jpg',
@@ -60,7 +59,7 @@ const Home = () => {
         '/assets/img/CONTRATOSIMPLES.jpg',
     ];
 
-    // Estados e Dados para a Galeria/Carrossel de Imagens
+
     const [currentGallerySlide, setCurrentGallerySlide] = useState(0);
 
     const galleryCarouselItems = [
@@ -86,7 +85,7 @@ const Home = () => {
         },
     ];
 
-    // Efeito para o Carrossel do Hero
+ 
     useEffect(() => {
         const interval = setInterval(() => {
             setCurrentHeroSlide((prevSlide) =>
@@ -96,7 +95,7 @@ const Home = () => {
         return () => clearInterval(interval);
     }, [heroBackgroundImages.length]);
 
-    // Funções para navegar no Carrossel da Galeria
+
     const nextGallerySlide = () => {
         setCurrentGallerySlide((prev) => (prev + 1) % galleryCarouselItems.length);
     };
@@ -144,7 +143,6 @@ const Home = () => {
             </header>
 
 
-            {/* 1. SEÇÃO HERO (MAIS CLEAN) */}
             <section
                 style={{
                     ...styles.heroWithBackground,
@@ -170,7 +168,7 @@ const Home = () => {
                         ...styles.button,
                         backgroundColor: colorPalette.secondary,
                         zIndex: 10,
-                        fontWeight: '700', // Destaque na fonte
+                        fontWeight: '700',
                     }}
                     className="animated-item delay-3 hero-action-button"
                     onClick={() => navigate('/Cadastro')}
@@ -179,11 +177,11 @@ const Home = () => {
                 </button>
             </section>
 
-            {/* 2. SEÇÃO SERVIÇOS */}
-            <section id="Serviços" style={styles.section}> {/* ID e SEÇÃO PADRÃO */}
+     
+            <section id="Serviços" style={styles.section}> 
                 <h2 style={styles.sectionTitle}>
                     Nossos <strong>Serviços</strong> 
-                </h2> {/* CORRIGIDO */}
+                </h2> 
                 <p style={styles.sectionSubtitle}>
                     Utilize nossa plataforma moderna para desburocratizar o acesso à justiça.
                 </p>
@@ -193,7 +191,6 @@ const Home = () => {
                             {renderServiceIcon(item.icon)}
                             <h3 style={styles.cardTitle}>{item.title}</h3>
                             <p style={styles.cardDescription}>{item.description}</p>
-                            {/* Ação específica para o card de agendamento */}
                             {item.title === 'Agendamento Fácil' && (
                                 <button
                                     onClick={() => navigate('/Cadastro')}
@@ -208,11 +205,11 @@ const Home = () => {
             </section>
 
 
-            {/* 3. SEÇÃO SOBRE/IMPACTO */}
-            <section id="sobre" style={styles.sectionAlt}> {/* ID e SEÇÃO ALTERNATIVA */}
+     
+            <section id="sobre" style={styles.sectionAlt}> 
                 <h2 style={styles.sectionTitle}>
                     <strong>Sobre</strong> Nós
-                </h2> {/* CORRIGIDO */}
+                </h2> 
                 <p style={styles.sectionSubtitleAlt}>
                     Comprometimento com a comunidade e com a excelência no patrocínio jurídico.
                 </p>
@@ -227,7 +224,7 @@ const Home = () => {
                                 <img src={item.src} alt={item.title} className="carousel-image" />
                                 <div className="carousel-caption">
                                     <h4>{item.title}</h4>
-                                    {/* No design clean, a descrição completa pode ser removida ou simplificada */}
+                        
                                     <p style={{fontSize: '1rem', opacity: 0.8}}>{item.fullDescription.split('.')[0]}</p> 
                                 </div>
                             </div>
@@ -236,7 +233,6 @@ const Home = () => {
                     <button onClick={nextGallerySlide} className="carousel-nav-button next">→</button>
                 </div>
 
-                {/* Indicadores de slide (pontinhos) */}
                 <div style={styles.carouselIndicators}>
                     {galleryCarouselItems.map((_, idx) => (
                         <span
@@ -253,12 +249,12 @@ const Home = () => {
 
 
             {/* 4. SEÇÃO MATERIAIS */}
-            <section id="materiais" style={styles.section}> {/* ID e SEÇÃO PADRÃO */}
+            <section id="materiais" style={styles.section}> 
                 <div style={styles.contentBlock}>
                     <div style={{ flex: 1, minWidth: '300px' }}>
                         <h2 id="materiais1">
                             <strong>Materiais</strong> Educativos 
-                        </h2> {/* CORRIGIDO */}
+                        </h2>
                         <p style={{ color: colorPalette.text, marginBottom: '2rem' }}>
                             Acesse guias, vídeos e artigos simples sobre direito do trabalho, família, heranças e contratos. Nossa biblioteca é constantemente atualizada para mantê-lo informado.
                         </p>
@@ -272,7 +268,7 @@ const Home = () => {
                 </div>
             </section>
 
-            {/* CHATBOT & FOOTER */}
+        
             <button
                 style={{
                     ...styles.chatbotButton,
@@ -322,7 +318,7 @@ const styles = {
         height: '40px',
         marginRight: '1rem',
         borderRadius: '50%',
-        backgroundColor: '#fff', // Para dar destaque no logo
+        backgroundColor: '#fff', 
         padding: '2px', 
     },
     title: {
@@ -338,7 +334,7 @@ const styles = {
         transition: 'color 0.3s ease',
     },
     registerButton: {
-        padding: '0.75rem 1.5rem', // Aumentado
+        padding: '0.75rem 1.5rem', 
         backgroundColor: colorPalette.secondary,
         color: '#fff',
         border: 'none',
@@ -348,7 +344,6 @@ const styles = {
         transition: 'background-color 0.3s ease',
     },
 
-    // --- HERO SECTION ---
     heroWithBackground: {
         minHeight: '100vh',
         textAlign: 'center',
@@ -364,7 +359,7 @@ const styles = {
         zIndex: 1,
     },
     heroTitle: {
-        fontSize: '4rem', // Fonte maior e mais impactante
+        fontSize: '4rem', 
         fontWeight: '800',
         maxWidth: '900px',
         lineHeight: '1.1',
@@ -374,7 +369,7 @@ const styles = {
         zIndex: 10,
     },
     heroDescription: {
-        fontSize: '1.5rem', // Fonte maior para a descrição
+        fontSize: '1.5rem',
         maxWidth: '750px',
         margin: '0 auto 2rem auto',
         lineHeight: '1.5',
@@ -389,17 +384,17 @@ const styles = {
         left: 0,
         right: 0,
         bottom: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0.5)', // Overlay mais escuro para maior contraste
+        backgroundColor: 'rgba(0, 0, 0, 0.5)', 
         zIndex: 5,
     },
-    // --- SECTIONS ---
+
     section: {
-        padding: '6rem 2rem', // Maior espaçamento
+        padding: '6rem 2rem', 
         backgroundColor: colorPalette.cardBackground,
         boxShadow: '0 2px 10px rgba(0, 0, 0, 0.05)',
     },
     sectionAlt: {
-        padding: '6rem 2rem', // Maior espaçamento
+        padding: '6rem 2rem', 
         backgroundColor: colorPalette.subtle,
     },
     sectionTitle: {
@@ -432,17 +427,17 @@ const styles = {
         fontSize: '1.1rem',
         lineHeight: '1.6',
     },
-    // --- SERVICE CARDS (CLEAN) ---
+
     grid: {
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', // Cards um pouco maiores
+        gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', 
         gap: '2rem',
         marginTop: '2rem',
     },
     card: {
         backgroundColor: colorPalette.cardBackground,
-        borderRadius: '12px', // Cantos mais arredondados
-        padding: '2rem', // Mais padding
+        borderRadius: '12px', 
+        padding: '2rem', 
         boxShadow: '0 8px 16px rgba(0, 0, 0, 0.08)',
         transition: 'transform 0.3s ease, box-shadow 0.3s ease',
         textAlign: 'left',
@@ -471,7 +466,7 @@ const styles = {
         color: colorPalette.text,
         fontSize: '1rem',
     },
-    // --- DEMAIS ESTILOS ---
+   
     button: {
         padding: '0.75rem 2rem',
         backgroundColor: colorPalette.primary,
@@ -484,7 +479,7 @@ const styles = {
     },
     contentBlock: {
         display: 'flex',
-        gap: '4rem', // Mais espaço
+        gap: '4rem', 
         alignItems: 'center',
         flexWrap: 'wrap',
         justifyContent: 'space-between',
@@ -493,7 +488,7 @@ const styles = {
     },
     image: {
         width: '100%',
-        maxWidth: '450px', // Imagem maior no bloco de Conteúdo
+        maxWidth: '450px', 
         borderRadius: '12px',
         boxShadow: '0 4px 15px rgba(0, 0, 0, 0.15)',
     },
