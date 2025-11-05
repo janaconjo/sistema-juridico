@@ -263,7 +263,7 @@ const Home = () => {
                         </button>
                     </div>
                     <div style={{ flex: 1, minWidth: '300px', display: 'flex', justifyContent: 'flex-end' }}>
-                        <img src="/assets/img/OIP.webp" alt="Materiais Educativos" style={styles.image} />
+                        <img src="/assets/9723646 (1).jpg" alt="Materiais Educativos" style={styles.image} />
                     </div>
                 </div>
             </section>
